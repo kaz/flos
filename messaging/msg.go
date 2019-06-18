@@ -6,10 +6,12 @@ import (
 	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/gob"
 	"fmt"
 	"time"
+
+	"github.com/DataDog/zstd"
 )
 
 const (
@@ -22,7 +24,7 @@ const (
 
 type (
 	stampedPayload struct {
-		Payload   interface{}
+		Payload   []byte
 		Timestamp int64
 	}
 	signedPayload struct {
@@ -36,21 +38,19 @@ type (
 )
 
 func serialize(obj interface{}) ([]byte, error) {
-	buf := bytes.NewBuffer(make([]byte, 0, 256*1024))
-	encoder := gob.NewEncoder(buf)
-	if err := encoder.Encode(obj); err != nil {
+	buf := bytes.NewBuffer(nil)
+	if err := gob.NewEncoder(buf).Encode(obj); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
 }
 func deserialize(data []byte, objPtr interface{}) error {
-	decoder := gob.NewDecoder(bytes.NewReader(data))
-	return decoder.Decode(objPtr)
+	return gob.NewDecoder(bytes.NewReader(data)).Decode(objPtr)
 }
 
-func sign(obj interface{}) ([]byte, error) {
+func sign(data []byte) ([]byte, error) {
 	stamped, err := serialize(stampedPayload{
-		obj,
+		data,
 		time.Now().UnixNano(),
 	})
 	if err != nil {
@@ -59,15 +59,15 @@ func sign(obj interface{}) ([]byte, error) {
 
 	return serialize(signedPayload{
 		stamped,
-		hmac.New(sha256.New, []byte(KEY_SIGN)).Sum(stamped),
+		hmac.New(sha512.New, []byte(KEY_SIGN)).Sum(stamped),
 	})
 }
-func verify(data []byte) (interface{}, error) {
+func verify(data []byte) ([]byte, error) {
 	signed := &signedPayload{}
 	if err := deserialize(data, signed); err != nil {
 		return nil, err
 	}
-	if !hmac.Equal(signed.Signature, hmac.New(sha256.New, []byte(KEY_SIGN)).Sum(signed.Payload)) {
+	if !hmac.Equal(signed.Signature, hmac.New(sha512.New, []byte(KEY_SIGN)).Sum(signed.Payload)) {
 		return nil, fmt.Errorf("signature not match")
 	}
 
@@ -120,18 +120,41 @@ func decrypt(data []byte) ([]byte, error) {
 	return aead.Open(nil, encrypted.Nonce, encrypted.Payload, nil)
 }
 
-func Encode(obj interface{}) ([]byte, error) {
-	data, err := sign(obj)
-	if err != nil {
-		return nil, err
-	}
-	return encrypt(data)
+func compress(data []byte) ([]byte, error) {
+	return zstd.Compress(nil, data)
+}
+func decompress(data []byte) ([]byte, error) {
+	return zstd.Decompress(nil, data)
 }
 
-func Decode(data []byte) (interface{}, error) {
-	data, err := decrypt(data)
+func Encode(obj interface{}) ([]byte, error) {
+	data, err := serialize(obj)
 	if err != nil {
 		return nil, err
 	}
-	return verify(data)
+	data, err = sign(data)
+	if err != nil {
+		return nil, err
+	}
+	data, err = encrypt(data)
+	if err != nil {
+		return nil, err
+	}
+	return compress(data)
+}
+
+func Decode(data []byte, objPtr interface{}) error {
+	data, err := decompress(data)
+	if err != nil {
+		return err
+	}
+	data, err = decrypt(data)
+	if err != nil {
+		return err
+	}
+	data, err = verify(data)
+	if err != nil {
+		return err
+	}
+	return deserialize(data, objPtr)
 }

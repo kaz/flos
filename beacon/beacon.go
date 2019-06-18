@@ -57,13 +57,13 @@ func RecvBeacon() {
 			panic(err)
 		}
 
-		data, err := messaging.Decode(buffer[:n])
-		if err != nil {
+		var payload string
+		if err := messaging.Decode(buffer[:n], &payload); err != nil {
 			logger.Printf("Ignored: %v\n", err)
 			continue
 		}
 
-		if data != PAYLOAD {
+		if payload != PAYLOAD {
 			logger.Printf("Ignored: invalid payload")
 			continue
 		}
