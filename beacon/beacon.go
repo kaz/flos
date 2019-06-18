@@ -1,6 +1,7 @@
 package beacon
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -25,7 +26,7 @@ var (
 
 func StartService(g *echo.Group) {
 	g.GET("/nodes", getNodes)
-	g.DELETE("/nodes", deleteNode)
+	g.DELETE("/node", deleteNode)
 
 	go send()
 	go recv()
@@ -100,7 +101,7 @@ func recvBeacon(ch chan error) {
 		}
 
 		mu.Lock()
-		nodes[string(remote.IP)] = received
+		nodes[remote.IP.String()] = received
 		mu.Unlock()
 
 		logger.Printf("Received beacon from %v\n", remote.IP)
@@ -123,5 +124,11 @@ func deleteNode(c echo.Context) error {
 	mu.Lock()
 	defer mu.Unlock()
 
+	req, ok := c.Get("request").(string)
+	if !ok {
+		return fmt.Errorf("unpected request format")
+	}
+
+	delete(nodes, req)
 	return nil
 }
