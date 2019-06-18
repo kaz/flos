@@ -1,7 +1,7 @@
 package messaging
 
 import (
-	"github.com/kaz/flos/messaging/daphne"
+	"github.com/kaz/flos/messaging/clear"
 )
 
 type (
@@ -13,7 +13,8 @@ type (
 )
 
 var (
-	DefaultProtocol = &daphne.Protocol{}
+	DefaultProtocol = &clear.Protocol{}
+	// DefaultProtocol = &daphne.Protocol{}
 )
 
 func Encode(obj interface{}) ([]byte, error) {
