@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 
-	"github.com/kaz/flosd/beacon"
+	"github.com/kaz/flos/beacon"
 )
 
 func main() {

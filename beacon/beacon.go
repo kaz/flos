@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/kaz/flosd/messaging"
+	"github.com/kaz/flos/messaging"
 )
 
 var logger = log.New(os.Stdout, "[beacon] ", log.Ltime)

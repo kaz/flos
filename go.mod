@@ -1,3 +1,3 @@
-module github.com/kaz/flosd
+module github.com/kaz/flos
 
 go 1.12
