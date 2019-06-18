@@ -31,10 +31,6 @@ type (
 		Payload   []byte
 		Signature []byte
 	}
-	encryptedPayload struct {
-		Payload []byte
-		Nonce   []byte
-	}
 )
 
 func serialize(obj interface{}) ([]byte, error) {
@@ -97,17 +93,9 @@ func encrypt(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return serialize(encryptedPayload{
-		aead.Seal(nil, nonce, data, nil),
-		nonce,
-	})
+	return append(nonce, aead.Seal(nil, nonce, data, nil)...), nil
 }
 func decrypt(data []byte) ([]byte, error) {
-	encrypted := &encryptedPayload{}
-	if err := deserialize(data, encrypted); err != nil {
-		return nil, err
-	}
-
 	block, err := aes.NewCipher([]byte(KEY_ENC[:aes.BlockSize]))
 	if err != nil {
 		return nil, err
@@ -117,7 +105,8 @@ func decrypt(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return aead.Open(nil, encrypted.Nonce, encrypted.Payload, nil)
+	size := aead.NonceSize()
+	return aead.Open(nil, data[:size], data[size:], nil)
 }
 
 func compress(data []byte) ([]byte, error) {
@@ -136,19 +125,19 @@ func Encode(obj interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err = encrypt(data)
+	data, err = compress(data)
 	if err != nil {
 		return nil, err
 	}
-	return compress(data)
+	return encrypt(data)
 }
 
 func Decode(data []byte, objPtr interface{}) error {
-	data, err := decompress(data)
+	data, err := decrypt(data)
 	if err != nil {
 		return err
 	}
-	data, err = decrypt(data)
+	data, err = decompress(data)
 	if err != nil {
 		return err
 	}
