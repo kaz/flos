@@ -4,17 +4,22 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/kaz/flos/messaging"
 )
 
-var logger = log.New(os.Stdout, "[beacon] ", log.Ltime)
-
 const (
 	BEACON_CYCLE = 5
 	UDP_ADDR     = "239.239.239.239:239"
-	PAYLOAD      = "*** FLOS ***"
+)
+
+var (
+	logger = log.New(os.Stdout, "[beacon] ", log.Ltime)
+
+	mu    = sync.RWMutex{}
+	nodes = map[string]time.Time{}
 )
 
 func SendBeacon() {
@@ -34,7 +39,7 @@ func sendBeacon(ch chan error) {
 	defer conn.Close()
 
 	for {
-		payload, err := messaging.Encode(PAYLOAD)
+		payload, err := messaging.Encode(time.Now())
 		if err != nil {
 			ch <- err
 			return
@@ -73,23 +78,40 @@ func recvBeacon(ch chan error) {
 
 	buffer := make([]byte, 256*1024)
 	for {
-		n, remoteAddress, err := listener.ReadFromUDP(buffer)
+		n, remote, err := listener.ReadFromUDP(buffer)
 		if err != nil {
 			ch <- err
 			return
 		}
 
-		var payload string
-		if err := messaging.Decode(buffer[:n], &payload); err != nil {
-			logger.Printf("Ignored: %v\n", err)
+		var received time.Time
+		if err := messaging.Decode(buffer[:n], &received); err != nil {
+			logger.Printf("Beacon discarded: %v\n", err)
 			continue
 		}
 
-		if payload != PAYLOAD {
-			logger.Printf("Ignored: invalid payload")
-			continue
-		}
+		mu.Lock()
+		nodes[string(remote.IP)] = received
+		mu.Unlock()
 
-		logger.Printf("Received beacon from %v\n", remoteAddress.IP)
+		logger.Printf("Received beacon from %v\n", remote.IP)
 	}
+}
+
+func GetNodes() map[string]time.Time {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	result := make(map[string]time.Time)
+	for k, v := range nodes {
+		result[k] = v
+	}
+
+	return result
+}
+func DeleteNode(ip net.IP) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	delete(nodes, string(ip))
 }
