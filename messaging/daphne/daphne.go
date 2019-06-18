@@ -1,4 +1,4 @@
-package messaging
+package daphne
 
 import (
 	"bytes"
@@ -23,6 +23,8 @@ const (
 )
 
 type (
+	Protocol struct{}
+
 	stampedPayload struct {
 		Payload   []byte
 		Timestamp int64
@@ -116,7 +118,7 @@ func decompress(data []byte) ([]byte, error) {
 	return zstd.Decompress(nil, data)
 }
 
-func Encode(obj interface{}) ([]byte, error) {
+func (p *Protocol) Encode(obj interface{}) ([]byte, error) {
 	data, err := serialize(obj)
 	if err != nil {
 		return nil, err
@@ -132,7 +134,7 @@ func Encode(obj interface{}) ([]byte, error) {
 	return encrypt(data)
 }
 
-func Decode(data []byte, objPtr interface{}) error {
+func (p *Protocol) Decode(data []byte, objPtr interface{}) error {
 	data, err := decrypt(data)
 	if err != nil {
 		return err
@@ -148,6 +150,6 @@ func Decode(data []byte, objPtr interface{}) error {
 	return deserialize(data, objPtr)
 }
 
-func Type() string {
+func (p *Protocol) Type() string {
 	return "application/octet-stream"
 }
