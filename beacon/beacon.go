@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/kaz/flos/messaging"
+	"github.com/labstack/echo/v4"
 )
 
 const (
@@ -22,7 +23,15 @@ var (
 	nodes = map[string]time.Time{}
 )
 
-func SendBeacon() {
+func StartService(g *echo.Group) {
+	g.GET("/nodes", getNodes)
+	g.DELETE("/nodes", deleteNode)
+
+	go send()
+	go recv()
+}
+
+func send() {
 	for {
 		ch := make(chan error)
 		go sendBeacon(ch)
@@ -54,7 +63,7 @@ func sendBeacon(ch chan error) {
 	}
 }
 
-func RecvBeacon() {
+func recv() {
 	for {
 		ch := make(chan error)
 		go recvBeacon(ch)
@@ -98,20 +107,21 @@ func recvBeacon(ch chan error) {
 	}
 }
 
-func GetNodes() map[string]time.Time {
+func getNodes(c echo.Context) error {
 	mu.RLock()
 	defer mu.RUnlock()
 
-	result := make(map[string]time.Time)
+	resp := make(map[string]time.Time)
 	for k, v := range nodes {
-		result[k] = v
+		resp[k] = v
 	}
 
-	return result
+	c.Set("response", resp)
+	return nil
 }
-func DeleteNode(ip net.IP) {
+func deleteNode(c echo.Context) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	delete(nodes, string(ip))
+	return nil
 }

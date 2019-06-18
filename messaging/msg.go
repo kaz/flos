@@ -158,3 +158,7 @@ func Decode(data []byte, objPtr interface{}) error {
 	}
 	return deserialize(data, objPtr)
 }
+
+func Type() string {
+	return "application/octet-stream"
+}
