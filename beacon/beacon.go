@@ -18,19 +18,30 @@ const (
 )
 
 func SendBeacon() {
+	for {
+		ch := make(chan error)
+		go sendBeacon(ch)
+		logger.Printf("Sending beacon failed: %v\n", <-ch)
+		close(ch)
+	}
+}
+func sendBeacon(ch chan error) {
 	conn, err := net.Dial("udp", UDP_ADDR)
 	if err != nil {
-		panic(err)
+		ch <- err
+		return
 	}
 	defer conn.Close()
 
 	for {
 		payload, err := messaging.Encode(PAYLOAD)
 		if err != nil {
-			panic(err)
+			ch <- err
+			return
 		}
 		if _, err := conn.Write(payload); err != nil {
-			panic(err)
+			ch <- err
+			return
 		}
 		logger.Println("Sent beacon")
 
@@ -39,14 +50,24 @@ func SendBeacon() {
 }
 
 func RecvBeacon() {
+	for {
+		ch := make(chan error)
+		go recvBeacon(ch)
+		logger.Printf("Receiving beacon failed: %v\n", <-ch)
+		close(ch)
+	}
+}
+func recvBeacon(ch chan error) {
 	address, err := net.ResolveUDPAddr("udp", UDP_ADDR)
 	if err != nil {
-		panic(err)
+		ch <- err
+		return
 	}
 
 	listener, err := net.ListenMulticastUDP("udp", nil, address)
 	if err != nil {
-		panic(err)
+		ch <- err
+		return
 	}
 	defer listener.Close()
 
@@ -54,7 +75,8 @@ func RecvBeacon() {
 	for {
 		n, remoteAddress, err := listener.ReadFromUDP(buffer)
 		if err != nil {
-			panic(err)
+			ch <- err
+			return
 		}
 
 		var payload string
@@ -68,6 +90,6 @@ func RecvBeacon() {
 			continue
 		}
 
-		logger.Printf("Received from %v\n", remoteAddress.IP)
+		logger.Printf("Received beacon from %v\n", remoteAddress.IP)
 	}
 }
