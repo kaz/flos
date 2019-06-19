@@ -5,6 +5,7 @@ import (
 
 	"github.com/kaz/flos/beacon"
 	"github.com/kaz/flos/messaging"
+	"github.com/kaz/flos/state"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,6 +25,7 @@ func main() {
 	e.Use(logger)
 	e.Use(messaging.Middleware)
 
+	state.StartService(e.Group("/state"))
 	beacon.StartService(e.Group("/beacon"))
 
 	e.Logger.Fatal(e.Start(":39239"))
