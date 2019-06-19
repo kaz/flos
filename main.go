@@ -3,11 +3,12 @@ package main
 import (
 	"log"
 
+	"github.com/labstack/echo/v4"
+
 	"github.com/kaz/flos/beacon"
 	"github.com/kaz/flos/messaging"
+	"github.com/kaz/flos/power"
 	"github.com/kaz/flos/state"
-
-	"github.com/labstack/echo/v4"
 )
 
 func logger(next echo.HandlerFunc) echo.HandlerFunc {
@@ -25,8 +26,9 @@ func main() {
 	e.Use(logger)
 	e.Use(messaging.Middleware)
 
+	power.StartService(e.Group("/power"))
 	state.StartService(e.Group("/state"))
 	beacon.StartService(e.Group("/beacon"))
 
-	e.Logger.Fatal(e.Start(":39239"))
+	e.Logger.Fatal(e.Start(power.LISTEN))
 }
