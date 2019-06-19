@@ -30,8 +30,6 @@ func StartService(g *echo.Group) {
 			break
 		}
 
-		logger.Println("Trying to kill other process ...")
-
 		payload, err := messaging.Encode("stop")
 		if err != nil {
 			logger.Printf("Failed to encode payload: %v\n", err)
@@ -39,6 +37,7 @@ func StartService(g *echo.Group) {
 			continue
 		}
 
+		logger.Println("Killing old process ...")
 		resp, err := http.Post("http://"+LISTEN+"/power", messaging.Type(), bytes.NewReader(payload))
 		if err != nil || resp.StatusCode != http.StatusOK {
 			logger.Printf("Failed to kill: %v\n", err)
@@ -48,6 +47,14 @@ func StartService(g *echo.Group) {
 
 		time.Sleep(ACTION_DELAY_SEC * time.Second)
 	}
+	go func() {
+		for _, val := range os.Args {
+			if val == "-d" || val == "--detach" {
+				logger.Println("Detaching ...")
+				restart()
+			}
+		}
+	}()
 
 	g.POST("", postPower)
 }
