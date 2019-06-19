@@ -9,7 +9,7 @@ type (
 )
 
 func (p *Protocol) Encode(obj interface{}) ([]byte, error) {
-	return json.MarshalIndent(obj, "", "  ")
+	return json.MarshalIndent(obj, "", "\t")
 }
 
 func (p *Protocol) Decode(data []byte, objPtr interface{}) error {
