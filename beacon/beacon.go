@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	BEACON_CYCLE_SEC = 6
+	BEACON_CYCLE_SEC = 5
 	UDP_ADDR         = "239.239.239.239:239"
 )
 
@@ -26,6 +26,7 @@ func StartService(g *echo.Group) {
 		for {
 			ch := make(chan error)
 			go sendBeacon(ch)
+			logger.Println("Beacon sending goroutine has been started")
 			logger.Printf("Sending beacon failed: %v\n", <-ch)
 			close(ch)
 		}
@@ -34,6 +35,7 @@ func StartService(g *echo.Group) {
 		for {
 			ch := make(chan error)
 			go recvBeacon(ch)
+			logger.Println("Beacon receiving goroutine has been started")
 			logger.Printf("Receiving beacon failed: %v\n", <-ch)
 			close(ch)
 		}

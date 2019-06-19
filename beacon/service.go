@@ -25,7 +25,6 @@ func sendBeacon(ch chan error) {
 			ch <- err
 			return
 		}
-		logger.Println("Sent beacon")
 
 		time.Sleep(BEACON_CYCLE_SEC * time.Second)
 	}
@@ -45,7 +44,9 @@ func recvBeacon(ch chan error) {
 	}
 	defer listener.Close()
 
-	buffer := make([]byte, 256*1024)
+	// CAUTION: payload size must be less than 512
+	buffer := make([]byte, 512)
+
 	for {
 		n, remote, err := listener.ReadFromUDP(buffer)
 		if err != nil {
@@ -60,9 +61,10 @@ func recvBeacon(ch chan error) {
 		}
 
 		mu.Lock()
+		if _, ok := nodes[remote.IP.String()]; !ok {
+			logger.Printf("Detected new node: %v\n", remote.IP)
+		}
 		nodes[remote.IP.String()] = received
 		mu.Unlock()
-
-		logger.Printf("Received beacon from %v\n", remote.IP)
 	}
 }
