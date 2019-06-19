@@ -108,6 +108,10 @@ func decrypt(data []byte) ([]byte, error) {
 	}
 
 	size := aead.NonceSize()
+	if size > len(data) {
+		return nil, fmt.Errorf("invalid payload length")
+	}
+
 	return aead.Open(nil, data[:size], data[size:], nil)
 }
 
