@@ -2,10 +2,22 @@ package messaging
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 )
+
+var (
+	logger = log.New(os.Stdout, "[internal] ", log.Ltime)
+)
+
+func ErrorHandler(err error, c echo.Context) {
+	logger.Println(err)
+	resp, _ := Encode(err)
+	c.Blob(http.StatusBadRequest, Type(), resp)
+}
 
 func Middleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
