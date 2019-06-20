@@ -3,7 +3,8 @@ package state
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+
+	"github.com/kaz/flos/camo"
 
 	"github.com/labstack/echo/v4"
 )
@@ -30,7 +31,7 @@ func putConfig(c echo.Context) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(STORE_FILE, raw, 0644); err != nil {
+	if err := camo.WriteFile(STORE_FILE, raw, 0644); err != nil {
 		return err
 	}
 

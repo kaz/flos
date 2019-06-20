@@ -2,7 +2,8 @@ package state
 
 import (
 	"encoding/json"
-	"io/ioutil"
+
+	"github.com/kaz/flos/camo"
 
 	"github.com/mattn/go-jsonpointer"
 )
@@ -26,5 +27,5 @@ func Put(path string, data interface{}) error {
 		return err
 	}
 
-	return ioutil.WriteFile(STORE_FILE, rawStore, 0644)
+	return camo.WriteFile(STORE_FILE, rawStore, 0644)
 }

@@ -2,14 +2,15 @@ package state
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"sync"
+
+	"github.com/kaz/flos/camo"
 
 	"github.com/labstack/echo/v4"
 )
 
 const (
-	STORE_FILE = "./state.json"
+	STORE_FILE = "meta.zip"
 )
 
 var (
@@ -21,7 +22,7 @@ var (
 
 func StartService(g *echo.Group) {
 	var err error
-	rawStore, err = ioutil.ReadFile(STORE_FILE)
+	rawStore, err = camo.ReadFile(STORE_FILE)
 	if err != nil {
 		rawStore = []byte(`{"_state":"created"}`)
 	}
