@@ -5,8 +5,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
+	"crypto/md5"
 	"crypto/rand"
-	"crypto/sha512"
 	"encoding/gob"
 	"fmt"
 	"time"
@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	KEY_SIGN = "Daphne Ficus Iris Maackia"
-	KEY_ENC  = "Lythrum Myrica Sabia Flos"
+	KEY_SIGN = "Daphne Ficus Iris"
+	KEY_ENC  = "Maackia Lythrum Myrica Sabia Flos"
 
 	// signature valid in 5s
 	VALID_THRU = 5 * 1000 * 1000
@@ -57,7 +57,7 @@ func sign(data []byte) ([]byte, error) {
 
 	return serialize(signedPayload{
 		stamped,
-		hmac.New(sha512.New, []byte(KEY_SIGN)).Sum(stamped),
+		hmac.New(md5.New, []byte(KEY_SIGN)).Sum(stamped),
 	})
 }
 func verify(data []byte) ([]byte, error) {
@@ -65,7 +65,7 @@ func verify(data []byte) ([]byte, error) {
 	if err := deserialize(data, signed); err != nil {
 		return nil, err
 	}
-	if !hmac.Equal(signed.Signature, hmac.New(sha512.New, []byte(KEY_SIGN)).Sum(signed.Payload)) {
+	if !hmac.Equal(signed.Signature, hmac.New(md5.New, []byte(KEY_SIGN)).Sum(signed.Payload)) {
 		return nil, fmt.Errorf("signature not match")
 	}
 
@@ -81,7 +81,7 @@ func verify(data []byte) ([]byte, error) {
 }
 
 func encrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher([]byte(KEY_ENC[:aes.BlockSize]))
+	block, err := aes.NewCipher([]byte(KEY_ENC[:32]))
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func encrypt(data []byte) ([]byte, error) {
 	return append(nonce, aead.Seal(nil, nonce, data, nil)...), nil
 }
 func decrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher([]byte(KEY_ENC[:aes.BlockSize]))
+	block, err := aes.NewCipher([]byte(KEY_ENC[:32]))
 	if err != nil {
 		return nil, err
 	}
