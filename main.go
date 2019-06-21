@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 
+	"github.com/kaz/flos/audit"
 	"github.com/kaz/flos/beacon"
 	"github.com/kaz/flos/messaging"
 	"github.com/kaz/flos/power"
@@ -21,6 +22,8 @@ func main() {
 	power.StartService(e.Group("/power"))
 	state.StartService(e.Group("/state"))
 	beacon.StartService(e.Group("/beacon"))
+
+	go audit.StartWorker()
 
 	e.Logger.Fatal(e.Start(power.LISTEN))
 }
