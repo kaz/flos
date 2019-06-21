@@ -27,6 +27,15 @@ func StartService(g *echo.Group) {
 		return
 	}
 
+	err = db.Update(func(tx *bbolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(BUCKET_NAME))
+		return err
+	})
+	if err != nil {
+		logger.Printf("Failed to create bucket: %v\n", err)
+		return
+	}
+
 	g.PATCH("/books", getBooksAfter)
 	g.DELETE("/books", deleteBooksBefore)
 }
