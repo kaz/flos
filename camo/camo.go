@@ -5,8 +5,8 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
-	"io/ioutil"
-	"os"
+
+	"github.com/DataDog/zstd"
 )
 
 const (
@@ -22,40 +22,36 @@ func gcm() (cipher.AEAD, error) {
 
 	return cipher.NewGCM(block)
 }
-
-func WriteFile(filename string, data []byte, perm os.FileMode) error {
+func encrypt(data []byte) ([]byte, error) {
 	aead, err := gcm()
-	if err != nil {
-		return err
-	}
-
-	nonce := make([]byte, aead.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return err
-	}
-
-	contents := []byte(CAMO_HEADER)
-	contents = append(contents, nonce...)
-	contents = append(contents, aead.Seal(nil, nonce, data, nil)...)
-
-	return ioutil.WriteFile(filename, contents, perm)
-}
-func ReadFile(filename string) ([]byte, error) {
-	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
+	nonce := make([]byte, aead.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, err
+	}
+
+	return append(nonce, aead.Seal(nil, nonce, data, nil)...), nil
+}
+func decrypt(data []byte) ([]byte, error) {
 	aead, err := gcm()
 	if err != nil {
 		return nil, err
 	}
 
 	size := aead.NonceSize()
-	if size+len(CAMO_HEADER) > len(data) {
-		return nil, fmt.Errorf("file size too short")
+	if size > len(data) {
+		return nil, fmt.Errorf("invalid payload length")
 	}
-	data = data[len(CAMO_HEADER):]
 
 	return aead.Open(nil, data[:size], data[size:], nil)
+}
+
+func compress(data []byte) ([]byte, error) {
+	return zstd.Compress(nil, data)
+}
+func decompress(data []byte) ([]byte, error) {
+	return zstd.Decompress(nil, data)
 }
