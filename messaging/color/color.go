@@ -1,25 +1,21 @@
-package daphne
+package color
 
 import (
 	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/gob"
 	"fmt"
 	"time"
 
-	"github.com/DataDog/zstd"
+	"github.com/kaz/flos/camo"
 )
 
 const (
-	KEY_SIGN = "Daphne Ficus Iris"
-	KEY_ENC  = "Maackia Lythrum Myrica Sabia Flos"
+	// signature valid in 4s
+	VALID_THRU = 4 * 1000 * 1000
 
-	// signature valid in 5s
-	VALID_THRU = 5 * 1000 * 1000
+	SIGN_KEY = "Daphne Ficus Iris Maackia Lythrum Myrica Sabia Flos"
 )
 
 type (
@@ -57,7 +53,7 @@ func sign(data []byte) ([]byte, error) {
 
 	return serialize(signedPayload{
 		stamped,
-		hmac.New(md5.New, []byte(KEY_SIGN)).Sum(stamped),
+		hmac.New(md5.New, []byte(SIGN_KEY)).Sum(stamped),
 	})
 }
 func verify(data []byte) ([]byte, error) {
@@ -65,7 +61,7 @@ func verify(data []byte) ([]byte, error) {
 	if err := deserialize(data, signed); err != nil {
 		return nil, err
 	}
-	if !hmac.Equal(signed.Signature, hmac.New(md5.New, []byte(KEY_SIGN)).Sum(signed.Payload)) {
+	if !hmac.Equal(signed.Signature, hmac.New(md5.New, []byte(SIGN_KEY)).Sum(signed.Payload)) {
 		return nil, fmt.Errorf("signature not match")
 	}
 
@@ -80,48 +76,6 @@ func verify(data []byte) ([]byte, error) {
 	return stamped.Payload, nil
 }
 
-func encrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher([]byte(KEY_ENC[:32]))
-	if err != nil {
-		return nil, err
-	}
-	aead, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := make([]byte, aead.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return nil, err
-	}
-
-	return append(nonce, aead.Seal(nil, nonce, data, nil)...), nil
-}
-func decrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher([]byte(KEY_ENC[:32]))
-	if err != nil {
-		return nil, err
-	}
-	aead, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	size := aead.NonceSize()
-	if size > len(data) {
-		return nil, fmt.Errorf("invalid payload length")
-	}
-
-	return aead.Open(nil, data[:size], data[size:], nil)
-}
-
-func compress(data []byte) ([]byte, error) {
-	return zstd.Compress(nil, data)
-}
-func decompress(data []byte) ([]byte, error) {
-	return zstd.Decompress(nil, data)
-}
-
 func (p *Protocol) Encode(obj interface{}) ([]byte, error) {
 	data, err := serialize(obj)
 	if err != nil {
@@ -131,19 +85,11 @@ func (p *Protocol) Encode(obj interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err = compress(data)
-	if err != nil {
-		return nil, err
-	}
-	return encrypt(data)
+	return camo.Encode(data)
 }
 
 func (p *Protocol) Decode(data []byte, objPtr interface{}) error {
-	data, err := decrypt(data)
-	if err != nil {
-		return err
-	}
-	data, err = decompress(data)
+	data, err := camo.Decode(data)
 	if err != nil {
 		return err
 	}
