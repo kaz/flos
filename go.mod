@@ -11,5 +11,6 @@ require (
 	github.com/mattn/go-jsonpointer v0.0.0-20180225143300-37667080efed
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect
+	go.etcd.io/bbolt v1.3.3
 	golang.org/x/sys v0.0.0-20190609082536-301114b31cce
 )
