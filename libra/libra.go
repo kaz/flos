@@ -10,7 +10,7 @@ import (
 
 const (
 	DB_FILE     = "chunk.zip"
-	BUCKET_NAME = "yuni"
+	BUCKET_NAME = "PK"
 )
 
 var (
