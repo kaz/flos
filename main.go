@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
-
 	"github.com/kaz/flos/audit"
 	"github.com/kaz/flos/beacon"
 	"github.com/kaz/flos/libra"
@@ -10,6 +8,7 @@ import (
 	"github.com/kaz/flos/power"
 	"github.com/kaz/flos/proxy"
 	"github.com/kaz/flos/state"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {

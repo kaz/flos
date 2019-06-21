@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/kaz/flos/messaging"
-
 	"github.com/labstack/echo/v4"
 )
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/kaz/flos/camo"
-
 	"github.com/mattn/go-jsonpointer"
 )
 

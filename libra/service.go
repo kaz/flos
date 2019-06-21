@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/kaz/flos/camo"
-
 	"go.etcd.io/bbolt"
 )
 

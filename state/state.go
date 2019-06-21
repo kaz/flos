@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/kaz/flos/camo"
-
 	"github.com/labstack/echo/v4"
 )
 

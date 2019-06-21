@@ -8,9 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/labstack/echo/v4"
-
 	"github.com/kaz/flos/messaging"
+	"github.com/labstack/echo/v4"
 )
 
 const (

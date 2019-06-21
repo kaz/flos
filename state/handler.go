@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/kaz/flos/camo"
-
 	"github.com/labstack/echo/v4"
 )
 
