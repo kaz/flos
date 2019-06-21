@@ -42,7 +42,7 @@ func Middleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return next(c)
 		}
 
-		proxyReq, err := http.NewRequest(req.Method, c.Scheme()+"://"+destination+c.Path(), req.Body)
+		proxyReq, err := http.NewRequest(req.Method, c.Scheme()+"://"+destination+req.URL.Path, req.Body)
 		if err != nil {
 			return err
 		}
