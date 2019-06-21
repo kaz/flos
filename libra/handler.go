@@ -9,7 +9,7 @@ import (
 func getBooksAfter(c echo.Context) error {
 	req, ok := c.Get("request").(float64)
 	if !ok {
-		return fmt.Errorf("unpected request format")
+		return fmt.Errorf("unexpected request format")
 	}
 
 	data, err := GetAfter(uint64(req))
@@ -23,7 +23,7 @@ func getBooksAfter(c echo.Context) error {
 func deleteBooksBefore(c echo.Context) error {
 	req, ok := c.Get("request").(float64)
 	if !ok {
-		return fmt.Errorf("unpected request format")
+		return fmt.Errorf("unexpected request format")
 	}
 
 	if err := DeleteBefore(uint64(req)); err != nil {

@@ -22,7 +22,7 @@ func putConfig(c echo.Context) error {
 
 	req, ok := c.Get("request").(map[string]interface{})
 	if !ok {
-		return fmt.Errorf("unpected request format")
+		return fmt.Errorf("unexpected request format")
 	}
 
 	raw, err := json.Marshal(&req)

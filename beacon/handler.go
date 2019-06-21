@@ -25,7 +25,7 @@ func deleteNode(c echo.Context) error {
 
 	req, ok := c.Get("request").(string)
 	if !ok {
-		return fmt.Errorf("unpected request format")
+		return fmt.Errorf("unexpected request format")
 	}
 
 	delete(nodes, req)
