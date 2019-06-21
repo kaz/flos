@@ -4,12 +4,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/labstack/echo/v4"
 	"go.etcd.io/bbolt"
 )
 
 const (
 	DB_FILE     = "chunk.zip"
-	BUCKET_NAME = ""
+	BUCKET_NAME = "yuni"
 )
 
 var (
@@ -18,11 +19,14 @@ var (
 	logger = log.New(os.Stdout, "[libra] ", log.Ltime)
 )
 
-func StartService() {
+func StartService(g *echo.Group) {
 	var err error
 	db, err = bbolt.Open(DB_FILE, 0644, nil)
 	if err != nil {
 		logger.Printf("Failed to open db: %v\n", err)
 		return
 	}
+
+	g.PATCH("/books", getBooksAfter)
+	g.DELETE("/books", deleteBooksBefore)
 }
