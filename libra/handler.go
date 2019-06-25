@@ -12,7 +12,7 @@ func getBooksAfter(c echo.Context) error {
 		return fmt.Errorf("unexpected request format")
 	}
 
-	data, err := GetAfter(uint64(req))
+	data, err := getAfter(uint64(req))
 	if err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func deleteBooksBefore(c echo.Context) error {
 		return fmt.Errorf("unexpected request format")
 	}
 
-	if err := DeleteBefore(uint64(req)); err != nil {
+	if err := deleteBefore(uint64(req)); err != nil {
 		return err
 	}
 

@@ -65,7 +65,8 @@ func Put(tag, contents string) error {
 		return bucket.Put(itob(key), value)
 	})
 }
-func GetAfter(gte uint64) ([]*Book, error) {
+
+func getAfter(gte uint64) ([]*Book, error) {
 	result := []*Book{}
 
 	return result, db.View(func(tx *bbolt.Tx) error {
@@ -89,7 +90,7 @@ func GetAfter(gte uint64) ([]*Book, error) {
 		return nil
 	})
 }
-func DeleteBefore(lte uint64) error {
+func deleteBefore(lte uint64) error {
 	end := itob(lte)
 	return db.Update(func(tx *bbolt.Tx) error {
 		cursor := tx.Bucket([]byte(BUCKET_NAME)).Cursor()
