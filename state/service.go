@@ -23,11 +23,17 @@ func (s *State) Get(path string) (*State, error) {
 }
 
 func (s *State) List() []*State {
-	ch := []*State{}
-	for _, elm := range s.element.([]interface{}) {
-		ch = append(ch, &State{elm})
+	src, ok := s.element.([]interface{})
+	if !ok {
+		logger.Println("target is not array! ", s)
+		return []*State{}
 	}
-	return ch
+
+	result := []*State{}
+	for _, elm := range src {
+		result = append(result, &State{elm})
+	}
+	return result
 }
 
 func (s *State) Value() interface{} {
