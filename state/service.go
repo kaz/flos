@@ -1,30 +1,35 @@
 package state
 
 import (
-	"encoding/json"
-
-	"github.com/kaz/flos/camo"
 	"github.com/mattn/go-jsonpointer"
 )
 
-func Get(path string) (interface{}, error) {
-	mu.RLock()
-	defer mu.RUnlock()
-	return jsonpointer.Get(store, path)
+type (
+	State struct {
+		element interface{}
+	}
+)
+
+func RootState() *State {
+	return &State{store}
 }
-func Put(path string, data interface{}) error {
-	mu.Lock()
-	defer mu.Unlock()
 
-	err := jsonpointer.Set(store, path, data)
+func (s *State) Get(path string) (*State, error) {
+	elm, err := jsonpointer.Get(s.element, path)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	return &State{elm}, nil
+}
 
-	rawStore, err = json.Marshal(store)
-	if err != nil {
-		return err
+func (s *State) List() []*State {
+	ch := []*State{}
+	for _, elm := range s.element.([]interface{}) {
+		ch = append(ch, &State{elm})
 	}
+	return ch
+}
 
-	return camo.WriteFile(STORE_FILE, rawStore, 0644)
+func (s *State) Value() interface{} {
+	return s.element
 }
