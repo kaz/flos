@@ -1,7 +1,7 @@
 package audit
 
 /*
-	An auditor for dawin actually does nothing.
+	An auditor for darwin actually does nothing.
 */
 
 type (
