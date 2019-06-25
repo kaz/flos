@@ -14,6 +14,7 @@ const (
 	STORE_FILE    = "chunk.0001.zip"
 	DEFAULT_STATE = `
 		{
+			"archive": [],
 			"audit": {
 				"file": [],
 				"mount": []

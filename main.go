@@ -28,6 +28,7 @@ func main() {
 	libra.StartService(e.Group("/libra"))
 	state.StartService(e.Group("/state"))
 	beacon.StartService(e.Group("/beacon"))
+	archive.StartService(e.Group("/archive"))
 	lifeline.StartService(e.Group("/lifeline"))
 
 	go tail.StartWorker()
