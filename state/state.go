@@ -20,7 +20,8 @@ const (
 			},
 			"messaging": {
 				"protocol": "clear"
-			}
+			},
+			"tail": []
 		}
 	`
 )

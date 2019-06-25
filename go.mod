@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/DataDog/zstd v1.4.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/jandre/fanotify v0.0.0-20140426212615-4c3a5311d56e
 	github.com/labstack/echo/v4 v4.1.6

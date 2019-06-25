@@ -8,6 +8,7 @@ import (
 	"github.com/kaz/flos/power"
 	"github.com/kaz/flos/proxy"
 	"github.com/kaz/flos/state"
+	"github.com/kaz/flos/tail"
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,6 +26,8 @@ func main() {
 	beacon.StartService(e.Group("/beacon"))
 
 	messaging.Init()
+
+	go tail.StartWorker()
 	go audit.StartWorker()
 
 	e.Logger.Fatal(e.Start(power.LISTEN))
