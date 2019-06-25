@@ -10,7 +10,7 @@ import (
 var (
 	logger = log.New(os.Stdout, "[lifeline] ", log.Ltime)
 
-	status = map[string]*result{}
+	results = map[string]*Result{}
 )
 
 func StartService(g *echo.Group) {

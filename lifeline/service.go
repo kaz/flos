@@ -8,21 +8,21 @@ import (
 )
 
 type (
-	result struct {
-		timestamp time.Time
-		name      string
-		result    bool
+	Result struct {
+		Timestamp time.Time
+		Name      string
+		Success   bool
 	}
 )
 
 func runMaster() {
-	s, err := state.RootState().Get("/lifetime")
+	s, err := state.RootState().Get("/lifeline")
 	if err != nil {
 		logger.Printf("failed to read config: %v\n", err)
 		return
 	}
 
-	ch := make(chan *result)
+	ch := make(chan *Result)
 
 	for _, cfg := range s.List() {
 		naState, err := cfg.Get("/name")
@@ -65,18 +65,18 @@ func runMaster() {
 	}
 
 	for r := range ch {
-		status[r.name] = r
+		results[r.Name] = r
 	}
 }
 
-func runWorker(name, script string, cycle time.Duration, ch chan *result) {
+func runWorker(name, script string, cycle time.Duration, ch chan *Result) {
 	for {
 		err := exec.Command("sh", "-c", script).Run()
 		if err != nil {
-			logger.Printf("command failed: %v\n", err)
+			// logger.Printf("command failed: %v\n", err)
 		}
 
-		ch <- &result{time.Now(), name, err == nil}
+		ch <- &Result{time.Now(), name, err == nil}
 		time.Sleep(cycle * time.Second)
 	}
 }
