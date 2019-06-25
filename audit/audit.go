@@ -30,13 +30,13 @@ func StartWorker() {
 		path, ok := cfg.Value().(string)
 		if !ok {
 			logger.Printf("invalid config type")
-			return
+			continue
 		}
 		if err := auditor.WatchFile(path); err != nil {
 			logger.Printf("failed to watch: %v\n", err)
-			return
+			continue
 		}
-		logger.Printf("Watching file:%v ...\n", path)
+		logger.Printf("Watching file=%v\n", path)
 	}
 
 	s, err = state.RootState().Get("/audit/mount")
@@ -55,7 +55,7 @@ func StartWorker() {
 			logger.Printf("failed to watch: %v\n", err)
 			return
 		}
-		logger.Printf("Watching mount:%v ...\n", path)
+		logger.Printf("Watching mount=%v\n", path)
 	}
 
 	for ev := range auditor.Event {
