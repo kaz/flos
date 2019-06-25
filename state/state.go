@@ -43,9 +43,10 @@ func StartService(g *echo.Group) {
 	}
 
 	if err := json.Unmarshal(rawStore, &store); err != nil {
+		logger.Printf("failed to parse state: %v\n", err)
 		rawStore = []byte(DEFAULT_STATE)
+
 		if err := json.Unmarshal(rawStore, &store); err != nil {
-			logger.Printf("failed to parse state: %v\n", err)
 			panic(err)
 		}
 	}
