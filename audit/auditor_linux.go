@@ -2,7 +2,6 @@ package audit
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jandre/fanotify"
@@ -12,10 +11,9 @@ import (
 
 type (
 	Auditor struct {
-		perm   bool
-		nd     *fanotify.NotifyFD
-		logger *log.Logger
-		Event  chan *Event
+		perm  bool
+		nd    *fanotify.NotifyFD
+		Event chan *Event
 	}
 	Event struct {
 		Acts        []string
@@ -41,10 +39,9 @@ func NewAuditor(perm bool) (*Auditor, error) {
 	}
 
 	a := &Auditor{
-		perm:   perm,
-		nd:     nd,
-		logger: log.New(os.Stdout, "[auditor] ", log.Ltime),
-		Event:  make(chan *Event),
+		perm:  perm,
+		nd:    nd,
+		Event: make(chan *Event),
 	}
 
 	go a.startAudit()
@@ -69,14 +66,14 @@ func (a *Auditor) startAudit() {
 	for {
 		ev, err := a.nd.GetEvent()
 		if err != nil {
-			a.logger.Println(err)
+			logger.Println(err)
 			continue
 		}
 
 		var procInfo string
 		process, err := process.NewProcess(ev.Pid)
 		if err != nil {
-			a.logger.Println(err)
+			logger.Println(err)
 			procInfo = "[unknown process]"
 		} else {
 			procInfo = getProcInfo(process)
@@ -84,7 +81,7 @@ func (a *Auditor) startAudit() {
 
 		fileName, err := os.Readlink(fmt.Sprintf("/proc/self/fd/%d", ev.File.Fd()))
 		if err != nil {
-			a.logger.Println(err)
+			logger.Println(err)
 			fileName = "[unknown file]"
 		}
 
