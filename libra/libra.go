@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DB_FILE     = "chunk.zip"
+	DB_FILE     = "chunk.0002.zip"
 	BUCKET_NAME = "PK"
 
 	MAX_ROW_COUNT = 8192

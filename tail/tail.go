@@ -2,6 +2,7 @@ package tail
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -44,7 +45,7 @@ func StartWorker() {
 			logger.Printf("failed to open file: %v\n", err)
 			continue
 		}
-		if _, err := file.Seek(0, os.SEEK_END); err != nil {
+		if _, err := file.Seek(0, io.SeekEnd); err != nil {
 			logger.Printf("failed to seek file: %v\n", err)
 			continue
 		}
@@ -71,7 +72,7 @@ func StartWorker() {
 				logger.Printf("failed to read file: %v\n", err)
 				continue
 			}
-			if _, err := file.Seek(0, os.SEEK_END); err != nil {
+			if _, err := file.Seek(0, io.SeekEnd); err != nil {
 				logger.Printf("failed to seek file: %v\n", err)
 				continue
 			}

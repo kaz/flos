@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	STORE_FILE    = "meta.zip"
+	STORE_FILE    = "chunk.0001.zip"
 	DEFAULT_STATE = `
 		{
 			"audit": {
