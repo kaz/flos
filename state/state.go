@@ -2,6 +2,8 @@ package state
 
 import (
 	"encoding/json"
+	"log"
+	"os"
 	"sync"
 
 	"github.com/kaz/flos/camo"
@@ -9,10 +11,20 @@ import (
 )
 
 const (
-	STORE_FILE = "meta.zip"
+	STORE_FILE    = "meta.zip"
+	DEFAULT_STATE = `
+		{
+			"audit": {
+				"file": [],
+				"mount": []
+			}
+		}
+	`
 )
 
 var (
+	logger = log.New(os.Stdout, "[state] ", log.Ltime)
+
 	mu = sync.RWMutex{}
 
 	store    interface{}
@@ -23,12 +35,14 @@ func StartService(g *echo.Group) {
 	var err error
 	rawStore, err = camo.ReadFile(STORE_FILE)
 	if err != nil {
-		rawStore = []byte(`{"_state":"created"}`)
+		logger.Printf("failed to read state: %v\n", err)
+		rawStore = []byte(DEFAULT_STATE)
 	}
 
 	if err := json.Unmarshal(rawStore, &store); err != nil {
-		rawStore = []byte(`{"_state":"discarded"}`)
+		rawStore = []byte(DEFAULT_STATE)
 		if err := json.Unmarshal(rawStore, &store); err != nil {
+			logger.Printf("failed to parse state: %v\n", err)
 			panic(err)
 		}
 	}

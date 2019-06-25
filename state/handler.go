@@ -37,5 +37,6 @@ func putConfig(c echo.Context) error {
 	store = req
 	rawStore = raw
 
+	logger.Println("state updated")
 	return nil
 }
