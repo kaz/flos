@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kaz/flos/archive"
 	"github.com/kaz/flos/audit"
 	"github.com/kaz/flos/beacon"
 	"github.com/kaz/flos/libra"
@@ -18,6 +19,8 @@ func main() {
 	e.HideBanner = true
 	e.HTTPErrorHandler = messaging.ErrorHandler
 
+	messaging.Init()
+
 	e.Pre(proxy.Middleware)
 	e.Pre(messaging.Middleware)
 
@@ -26,8 +29,6 @@ func main() {
 	state.StartService(e.Group("/state"))
 	beacon.StartService(e.Group("/beacon"))
 	lifeline.StartService(e.Group("/lifeline"))
-
-	messaging.Init()
 
 	go tail.StartWorker()
 	go audit.StartWorker()

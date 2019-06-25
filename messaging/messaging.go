@@ -6,7 +6,6 @@ import (
 
 	"github.com/kaz/flos/messaging/clear"
 	"github.com/kaz/flos/messaging/color"
-	"github.com/kaz/flos/state"
 )
 
 type (
@@ -24,20 +23,7 @@ var (
 )
 
 func Init() {
-	proto := "color"
-
-	s, err := state.RootState().Get("/messaging/protocol")
-	if err != nil {
-		logger.Printf("failed to fetch config: %v\n", err)
-	} else {
-		var ok bool
-		proto, ok = s.Value().(string)
-		if !ok {
-			logger.Println("unexpected config type")
-		}
-	}
-
-	if proto == "clear" {
+	if os.Getenv("FLOS_PROTO") == "clear" {
 		DefaultProtocol = &clear.Protocol{}
 		logger.Println("Using clear protocol")
 	} else {

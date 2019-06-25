@@ -19,9 +19,6 @@ const (
 				"mount": []
 			},
 			"lifeline": [],
-			"messaging": {
-				"protocol": "clear"
-			},
 			"tail": []
 		}
 	`
