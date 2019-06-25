@@ -12,7 +12,7 @@ const (
 	DB_FILE     = "chunk.zip"
 	BUCKET_NAME = "PK"
 
-	MAX_ROW_COUNT = 1024
+	MAX_ROW_COUNT = 8192
 )
 
 var (

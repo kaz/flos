@@ -36,7 +36,7 @@ func StartWorker() {
 			logger.Printf("failed to watch: %v\n", err)
 			return
 		}
-		logger.Printf("Watching file:%s ...\n", cfg)
+		logger.Printf("Watching file:%v ...\n", path)
 	}
 
 	s, err = state.RootState().Get("/audit/mount")
@@ -55,7 +55,7 @@ func StartWorker() {
 			logger.Printf("failed to watch: %v\n", err)
 			return
 		}
-		logger.Printf("Watching mount:%s ...\n", cfg)
+		logger.Printf("Watching mount:%v ...\n", path)
 	}
 
 	for ev := range auditor.Event {

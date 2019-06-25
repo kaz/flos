@@ -75,7 +75,7 @@ func (a *Auditor) startAudit() {
 		var procInfo string
 		process, err := process.NewProcess(ev.Pid)
 		if err != nil {
-			logger.Println(err)
+			// logger.Println(err)
 			procInfo = "[unknown process]"
 		} else {
 			procInfo = getProcInfo(process)
@@ -83,7 +83,7 @@ func (a *Auditor) startAudit() {
 
 		fileName, err := os.Readlink(fmt.Sprintf("/proc/self/fd/%d", ev.File.Fd()))
 		if err != nil {
-			logger.Println(err)
+			// logger.Println(err)
 			fileName = "[unknown file]"
 		}
 
