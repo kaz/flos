@@ -17,4 +17,5 @@ func StartService(g *echo.Group) {
 	go runMaster()
 
 	g.GET("", get)
+	g.POST("/shell", postShell)
 }
