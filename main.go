@@ -24,6 +24,7 @@ func main() {
 	state.StartService(e.Group("/state"))
 	beacon.StartService(e.Group("/beacon"))
 
+	messaging.Init()
 	go audit.StartWorker()
 
 	e.Logger.Fatal(e.Start(power.LISTEN))
