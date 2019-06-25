@@ -12,6 +12,7 @@ type (
 		Timestamp time.Time
 		Name      string
 		Success   bool
+		Output    string
 	}
 )
 
@@ -71,12 +72,17 @@ func runMaster() {
 
 func runWorker(name, script string, cycle time.Duration, ch chan *Result) {
 	for {
-		err := exec.Command("sh", "-c", script).Run()
+		out, err := exec.Command("sh", "-c", script).CombinedOutput()
 		if err != nil {
 			// logger.Printf("command failed: %v\n", err)
 		}
 
-		ch <- &Result{time.Now(), name, err == nil}
+		ch <- &Result{
+			Timestamp: time.Now(),
+			Name:      name,
+			Success:   err == nil,
+			Output:    string(out),
+		}
 		time.Sleep(cycle * time.Second)
 	}
 }
