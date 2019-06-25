@@ -85,6 +85,10 @@ func getAfter(gte uint64) ([]*Book, error) {
 
 			book.ID = btoi(k)
 			result = append(result, &book)
+
+			if len(result) >= MAX_ROW_COUNT {
+				break
+			}
 		}
 
 		return nil

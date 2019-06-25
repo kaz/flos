@@ -11,6 +11,8 @@ import (
 const (
 	DB_FILE     = "chunk.zip"
 	BUCKET_NAME = "PK"
+
+	MAX_ROW_COUNT = 1024
 )
 
 var (
