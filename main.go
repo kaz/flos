@@ -4,6 +4,7 @@ import (
 	"github.com/kaz/flos/audit"
 	"github.com/kaz/flos/beacon"
 	"github.com/kaz/flos/libra"
+	"github.com/kaz/flos/lifeline"
 	"github.com/kaz/flos/messaging"
 	"github.com/kaz/flos/power"
 	"github.com/kaz/flos/proxy"
@@ -24,6 +25,7 @@ func main() {
 	libra.StartService(e.Group("/libra"))
 	state.StartService(e.Group("/state"))
 	beacon.StartService(e.Group("/beacon"))
+	lifeline.StartService(e.Group("/lifeline"))
 
 	messaging.Init()
 

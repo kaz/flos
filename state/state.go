@@ -18,6 +18,7 @@ const (
 				"file": [],
 				"mount": []
 			},
+			"lifeline": [],
 			"messaging": {
 				"protocol": "clear"
 			},
