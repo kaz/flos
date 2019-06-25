@@ -2,15 +2,9 @@ package messaging
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/labstack/echo/v4"
-)
-
-var (
-	logger = log.New(os.Stdout, "[internal] ", log.Ltime)
 )
 
 func ErrorHandler(err error, c echo.Context) {

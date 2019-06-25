@@ -17,6 +17,9 @@ const (
 			"audit": {
 				"file": [],
 				"mount": []
+			},
+			"messaging": {
+				"protocol": "clear"
 			}
 		}
 	`
