@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
+	"path/filepath"
 	"time"
 
 	"github.com/kaz/flos/camo"
@@ -39,6 +40,10 @@ func deserialize(data []byte, objPtr interface{}) error {
 	return gob.NewDecoder(bytes.NewReader(data)).Decode(objPtr)
 }
 
+func Position() string {
+	result, _ := filepath.Abs(DB_FILE)
+	return result
+}
 func Put(tag, contents string) error {
 	data, err := serialize(&Book{
 		Tag:       tag,

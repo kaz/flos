@@ -14,7 +14,7 @@ var (
 )
 
 func StartWorker() {
-	auditor, err := NewAuditor(false)
+	auditor, err := NewAuditor(libra.Position(), false)
 	if err != nil {
 		logger.Printf("failed to init auditor: %v\n", err)
 		return
