@@ -11,6 +11,8 @@ import (
 const (
 	META_BUCKET = "META"
 	DATA_BUCKET = "DATA"
+
+	HASH_KEY = "FLOS"
 )
 
 type (
@@ -70,13 +72,8 @@ func (b *Bookshelf) Put(series, contents []byte) error {
 		return err
 	}
 
-	encodedSeries, err := camo.Encode(series)
-	if err != nil {
-		return err
-	}
-
 	return b.db.Update(func(tx *bbolt.Tx) error {
-		if err := tx.Bucket([]byte(META_BUCKET)).Put(encodedSeries, []byte{}); err != nil {
+		if err := tx.Bucket([]byte(META_BUCKET)).Put(hash(series), []byte{}); err != nil {
 			return err
 		}
 
@@ -92,14 +89,9 @@ func (b *Bookshelf) Put(series, contents []byte) error {
 }
 
 func (b *Bookshelf) Has(series []byte) (bool, error) {
-	encodedSeries, err := camo.Encode(series)
-	if err != nil {
-		return false, err
-	}
-
 	var has bool
 	return has, b.db.View(func(tx *bbolt.Tx) error {
-		has = tx.Bucket([]byte(META_BUCKET)).Get(encodedSeries) != nil
+		has = tx.Bucket([]byte(META_BUCKET)).Get(hash(series)) != nil
 		return nil
 	})
 }

@@ -19,7 +19,6 @@ func StartService(g *echo.Group) {
 		return
 	}
 
-	g.GET("", archiver.shelf.ListHandler)
 	g.PATCH("/snapshots", archiver.shelf.GetHandler)
 	g.DELETE("/snapshots", archiver.shelf.DeleteHandler)
 

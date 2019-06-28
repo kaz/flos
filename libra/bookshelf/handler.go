@@ -9,15 +9,6 @@ import (
 	"go.etcd.io/bbolt"
 )
 
-func (b *Bookshelf) ListHandler(c echo.Context) error {
-	data, err := b.listSeries()
-	if err != nil {
-		return err
-	}
-
-	c.Set("response", data)
-	return nil
-}
 func (b *Bookshelf) GetHandler(c echo.Context) error {
 	req, ok := c.Get("request").(float64)
 	if !ok {
@@ -45,24 +36,6 @@ func (b *Bookshelf) DeleteHandler(c echo.Context) error {
 	return nil
 }
 
-func (b *Bookshelf) listSeries() ([][]byte, error) {
-	result := [][]byte{}
-
-	return result, b.db.View(func(tx *bbolt.Tx) error {
-		cursor := tx.Bucket([]byte(META_BUCKET)).Cursor()
-
-		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
-			data, err := camo.Decode(k)
-			if err != nil {
-				return err
-			}
-
-			result = append(result, data)
-		}
-
-		return nil
-	})
-}
 func (b *Bookshelf) getAfter(gte uint64) ([]*Book, error) {
 	result := []*Book{}
 

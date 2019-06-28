@@ -2,6 +2,8 @@ package bookshelf
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/md5"
 	"encoding/binary"
 	"encoding/gob"
 	"sync"
@@ -48,4 +50,8 @@ func serialize(obj interface{}) ([]byte, error) {
 }
 func deserialize(data []byte, objPtr interface{}) error {
 	return gob.NewDecoder(bytes.NewReader(data)).Decode(objPtr)
+}
+
+func hash(key []byte) []byte {
+	return hmac.New(md5.New, []byte(HASH_KEY)).Sum(key)
 }

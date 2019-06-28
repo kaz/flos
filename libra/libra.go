@@ -28,7 +28,6 @@ func StartService(g *echo.Group) {
 
 	libra = lib
 
-	g.GET("", libra.ListHandler)
 	g.PATCH("/books", libra.GetHandler)
 	g.DELETE("/books", libra.DeleteHandler)
 }
