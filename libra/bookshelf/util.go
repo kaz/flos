@@ -4,7 +4,31 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
+	"sync"
 )
+
+var (
+	mu     sync.RWMutex
+	shelfs = []string{}
+)
+
+func registerBookshelf(path string) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	shelfs = append(shelfs, path)
+}
+func IsBookshelf(path string) bool {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	for _, s := range shelfs {
+		if path == s {
+			return true
+		}
+	}
+	return false
+}
 
 func itob(i uint64) []byte {
 	key := make([]byte, 8)

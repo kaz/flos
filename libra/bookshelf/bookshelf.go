@@ -39,7 +39,7 @@ func New(path string) (*Bookshelf, error) {
 		return nil, err
 	}
 
-	return &Bookshelf{abspath, db}, db.Update(func(tx *bbolt.Tx) error {
+	err = db.Update(func(tx *bbolt.Tx) error {
 		if _, err := tx.CreateBucketIfNotExists([]byte(META_BUCKET)); err != nil {
 			return err
 		}
@@ -48,6 +48,12 @@ func New(path string) (*Bookshelf, error) {
 		}
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	registerBookshelf(abspath)
+	return &Bookshelf{abspath, db}, nil
 }
 
 func (b *Bookshelf) Put(series, contents []byte) error {

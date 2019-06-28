@@ -24,8 +24,8 @@ func StartService(g *echo.Group) {
 	}
 
 	g.GET("", archiver.shelf.ListHandler)
-	g.PATCH("/snapshot", archiver.shelf.GetHandler)
-	g.DELETE("/snapshot", archiver.shelf.DeleteHandler)
+	g.PATCH("/snapshots", archiver.shelf.GetHandler)
+	g.DELETE("/snapshots", archiver.shelf.DeleteHandler)
 
 	s, err := state.RootState().Get("/archive")
 	if err != nil {

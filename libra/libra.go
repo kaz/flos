@@ -32,12 +32,6 @@ func StartService(g *echo.Group) {
 	g.DELETE("/books", libra.DeleteHandler)
 }
 
-func Position() string {
-	if libra == nil {
-		return ""
-	}
-	return libra.DBFile
-}
 func Put(series, contents string) error {
 	if libra == nil {
 		return fmt.Errorf("library is closed")

@@ -15,7 +15,7 @@ type (
 	}
 )
 
-func NewAuditor(ignore string, perm bool) (*Auditor, error) {
+func NewAuditor(perm bool) (*Auditor, error) {
 	return &Auditor{make(chan *Event)}, nil
 }
 

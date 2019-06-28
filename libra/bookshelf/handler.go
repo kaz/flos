@@ -75,13 +75,13 @@ func (b *Bookshelf) getAfter(gte uint64) ([]*Book, error) {
 				return err
 			}
 
-			var book *Book
-			if err := deserialize(data, book); err != nil {
+			var book Book
+			if err := deserialize(data, &book); err != nil {
 				return err
 			}
 
 			book.ID = btoi(k)
-			result = append(result, book)
+			result = append(result, &book)
 
 			if len(result) >= MAX_ROW_COUNT {
 				break

@@ -11,10 +11,9 @@ import (
 
 type (
 	Auditor struct {
-		ignore string
-		perm   bool
-		nd     *fanotify.NotifyFD
-		Event  chan *Event
+		perm  bool
+		nd    *fanotify.NotifyFD
+		Event chan *Event
 	}
 	Event struct {
 		Acts        []string
@@ -28,7 +27,7 @@ type (
 	Sometimes perm=true unexpectedly makes whole system hanged-up.
 	I do not realize why the problem occurs, so please be careful to use it :P
 */
-func NewAuditor(ignore string, perm bool) (*Auditor, error) {
+func NewAuditor(perm bool) (*Auditor, error) {
 	flag := fanotify.FAN_CLASS_NOTIF
 	if perm {
 		flag = fanotify.FAN_CLASS_PRE_CONTENT
@@ -40,10 +39,9 @@ func NewAuditor(ignore string, perm bool) (*Auditor, error) {
 	}
 
 	a := &Auditor{
-		ignore: ignore,
-		perm:   perm,
-		nd:     nd,
-		Event:  make(chan *Event),
+		perm:  perm,
+		nd:    nd,
+		Event: make(chan *Event),
 	}
 
 	go a.startAudit()
@@ -85,10 +83,6 @@ func (a *Auditor) startAudit() {
 		if err != nil {
 			// logger.Println(err)
 			fileName = "[unknown file]"
-		}
-
-		if fileName == a.ignore {
-			continue
 		}
 
 		acts := []string{}

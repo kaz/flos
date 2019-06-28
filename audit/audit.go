@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/kaz/flos/libra"
+	"github.com/kaz/flos/libra/bookshelf"
 	"github.com/kaz/flos/state"
 )
 
@@ -14,7 +15,7 @@ var (
 )
 
 func StartWorker() {
-	auditor, err := NewAuditor(libra.Position(), false)
+	auditor, err := NewAuditor(false)
 	if err != nil {
 		logger.Printf("failed to init auditor: %v\n", err)
 		return
@@ -59,6 +60,10 @@ func StartWorker() {
 	}
 
 	for ev := range auditor.Event {
+		if bookshelf.IsBookshelf(ev.FileName) {
+			continue
+		}
+
 		libra.Put("audit", fmt.Sprintln(ev.Acts, ev.FileName, "by", ev.ProcessInfo))
 	}
 }

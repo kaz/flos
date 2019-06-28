@@ -35,6 +35,10 @@ func NewArchiver() (*archiver, error) {
 
 func (a *archiver) Start() {
 	for ev := range a.watcher.Events {
+		if bookshelf.IsBookshelf(ev.Name) {
+			continue
+		}
+
 		libra.Put("archive", ev.String())
 
 		if ev.Op&fsnotify.Create != 0 {
