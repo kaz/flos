@@ -47,5 +47,5 @@ func StartService(g *echo.Group) {
 		logger.Printf("Watching dir=%v\n", path)
 	}
 
-	archiver.Start()
+	go archiver.Start()
 }
