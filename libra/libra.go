@@ -1,43 +1,46 @@
 package libra
 
 import (
+	"fmt"
 	"log"
 	"os"
 
+	"github.com/kaz/flos/libra/bookshelf"
 	"github.com/labstack/echo/v4"
-	"go.etcd.io/bbolt"
 )
 
 const (
-	DB_FILE     = "chunk.0002.zip"
-	BUCKET_NAME = "PK"
-
-	MAX_ROW_COUNT = 8192
+	LIBRA_FILE = "chunk.0002.zip"
 )
 
 var (
-	db *bbolt.DB
-
 	logger = log.New(os.Stdout, "[libra] ", log.Ltime)
+	libra  *bookshelf.Bookshelf
 )
 
 func StartService(g *echo.Group) {
-	var err error
-	db, err = bbolt.Open(DB_FILE, 0644, nil)
+	lib, err := bookshelf.New(LIBRA_FILE)
 	if err != nil {
 		logger.Printf("Failed to open db: %v\n", err)
 		return
 	}
 
-	err = db.Update(func(tx *bbolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(BUCKET_NAME))
-		return err
-	})
-	if err != nil {
-		logger.Printf("Failed to create bucket: %v\n", err)
-		return
-	}
+	libra = lib
 
-	g.PATCH("/books", getBooksAfter)
-	g.DELETE("/books", deleteBooksBefore)
+	g.GET("", libra.ListHandler)
+	g.PATCH("/books", libra.GetHandler)
+	g.DELETE("/books", libra.DeleteHandler)
+}
+
+func Position() string {
+	if libra == nil {
+		return ""
+	}
+	return libra.DBFile
+}
+func Put(series, contents string) error {
+	if libra == nil {
+		return fmt.Errorf("library is closed")
+	}
+	return libra.Put([]byte(series), []byte(contents))
 }
