@@ -9,8 +9,6 @@ import (
 )
 
 const (
-	MAX_ROW_COUNT = 1 << 13
-
 	META_BUCKET = "META"
 	DATA_BUCKET = "DATA"
 )
@@ -19,6 +17,7 @@ type (
 	Bookshelf struct {
 		DBFile string
 		db     *bbolt.DB
+		maxRow int
 	}
 	Book struct {
 		ID        uint64
@@ -28,7 +27,7 @@ type (
 	}
 )
 
-func New(path string) (*Bookshelf, error) {
+func New(path string, maxRow int) (*Bookshelf, error) {
 	abspath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -53,7 +52,7 @@ func New(path string) (*Bookshelf, error) {
 	}
 
 	registerBookshelf(abspath)
-	return &Bookshelf{abspath, db}, nil
+	return &Bookshelf{abspath, db, maxRow}, nil
 }
 
 func (b *Bookshelf) Put(series, contents []byte) error {

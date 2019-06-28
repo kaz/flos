@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	LIBRA_FILE = "chunk.0002.zip"
+	LIBRA_FILE    = "chunk.0002.zip"
+	MAX_ROW_COUNT = 1 << 13
 )
 
 var (
@@ -19,7 +20,7 @@ var (
 )
 
 func StartService(g *echo.Group) {
-	lib, err := bookshelf.New(LIBRA_FILE)
+	lib, err := bookshelf.New(LIBRA_FILE, MAX_ROW_COUNT)
 	if err != nil {
 		logger.Printf("Failed to open db: %v\n", err)
 		return

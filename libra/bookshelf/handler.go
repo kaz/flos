@@ -83,7 +83,7 @@ func (b *Bookshelf) getAfter(gte uint64) ([]*Book, error) {
 			book.ID = btoi(k)
 			result = append(result, &book)
 
-			if len(result) >= MAX_ROW_COUNT {
+			if len(result) >= b.maxRow {
 				break
 			}
 		}

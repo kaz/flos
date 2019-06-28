@@ -11,6 +11,11 @@ import (
 	"github.com/kaz/flos/libra/bookshelf"
 )
 
+const (
+	ARCHIVE_FILE  = "chunk.0003.zip"
+	MAX_ROW_COUNT = 1 << 10
+)
+
 type (
 	archiver struct {
 		watcher *fsnotify.Watcher
@@ -24,7 +29,7 @@ func NewArchiver() (*archiver, error) {
 		return nil, err
 	}
 
-	shelf, err := bookshelf.New(DB_FILE)
+	shelf, err := bookshelf.New(ARCHIVE_FILE, MAX_ROW_COUNT)
 	if err != nil {
 		logger.Printf("Failed to open db: %v\n", err)
 		return nil, err
