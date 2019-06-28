@@ -6,12 +6,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kaz/flos/power"
 	"github.com/labstack/echo/v4"
 )
 
 const (
 	BEACON_CYCLE_SEC = 5
-	UDP_ADDR         = "239.239.239.239:239"
+	UDP_ADDR         = "239.239.239.239" + power.LISTEN
 )
 
 var (
