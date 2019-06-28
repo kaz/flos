@@ -1,72 +1,36 @@
 package archive
 
 import (
-	"encoding/binary"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
-
-	"github.com/kaz/flos/camo"
-	"github.com/kaz/flos/libra"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/kaz/flos/state"
-	"go.etcd.io/bbolt"
+	"github.com/kaz/flos/libra"
+	"github.com/kaz/flos/libra/bookshelf"
 )
 
 type (
 	archiver struct {
 		watcher *fsnotify.Watcher
-		db      *bbolt.DB
+		shelf   *bookshelf.Bookshelf
 	}
 )
 
-func runMaster() {
-	archiver, err := newArchiver()
-	if err != nil {
-		logger.Printf("failed to init watcher: %v\n", err)
-		return
-	}
-
-	s, err := state.RootState().Get("/archive")
-	if err != nil {
-		logger.Printf("failed to read config: %v\n", err)
-		return
-	}
-
-	for _, cfg := range s.List() {
-		path, ok := cfg.Value().(string)
-		if !ok {
-			logger.Printf("invalid config type")
-			continue
-		}
-
-		if err := archiver.Watch(path); err != nil {
-			logger.Printf("failed to watch: %v\n", err)
-			continue
-		}
-		logger.Printf("Watching file=%v\n", path)
-	}
-
-	archiver.Watch("_")
-	archiver.Start()
-}
-
-func newArchiver() (*archiver, error) {
+func NewArchiver() (*archiver, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := bbolt.Open(DB_FILE, 0644, nil)
+	shelf, err := bookshelf.New(DB_FILE)
 	if err != nil {
 		logger.Printf("Failed to open db: %v\n", err)
 		return nil, err
 	}
 
-	return &archiver{watcher, db}, nil
+	return &archiver{watcher, shelf}, nil
 }
 
 func (a *archiver) Start() {
@@ -137,46 +101,8 @@ func (a *archiver) snapshot(path string) error {
 		return fmt.Errorf("failed to read file: %v\n", err)
 	}
 
-	bucketName, err := ptob(path)
-	if err != nil {
-		return fmt.Errorf("failed to get bucket name: %v\n", err)
-	}
-
-	key := make([]byte, 8)
-	binary.BigEndian.PutUint64(key, uint64(time.Now().UnixNano()))
-
-	value, err := camo.Encode(data)
-	if err != nil {
-		return fmt.Errorf("failed to encode data: %v\n", err)
-	}
-
-	return a.db.Update(func(tx *bbolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(bucketName)
-		if err != nil {
-			return err
-		}
-
-		logger.Println("creating snapshot:", path)
-		return b.Put(key, value)
-	})
+	return a.shelf.Put([]byte(path), data)
 }
 func (a *archiver) hasSnapshot(path string) (bool, error) {
-	bucketName, err := ptob(path)
-	if err != nil {
-		return false, err
-	}
-
-	var has bool
-	return has, a.db.View(func(tx *bbolt.Tx) error {
-		has = tx.Bucket(bucketName) != nil
-		return nil
-	})
-}
-
-func ptob(p string) ([]byte, error) {
-	k, err := camo.Encode([]byte(p))
-	if err != nil {
-		return nil, fmt.Errorf("failed to encode data: %v\n", err)
-	}
-	return k, nil
+	return a.shelf.Has([]byte(path))
 }
