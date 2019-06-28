@@ -1,29 +1,27 @@
 package archive
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/kaz/flos/camo"
+	"github.com/kaz/flos/libra"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/kaz/flos/state"
+	"go.etcd.io/bbolt"
 )
 
 type (
 	archiver struct {
-		*fsnotify.Watcher
-
-		watching map[string][]string
+		watcher *fsnotify.Watcher
+		db      *bbolt.DB
 	}
 )
-
-func newArchiver() (*archiver, error) {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-	return &archiver{watcher, make(map[string][]string)}, nil
-}
 
 func runMaster() {
 	archiver, err := newArchiver()
@@ -31,7 +29,6 @@ func runMaster() {
 		logger.Printf("failed to init watcher: %v\n", err)
 		return
 	}
-	defer archiver.Close()
 
 	s, err := state.RootState().Get("/archive")
 	if err != nil {
@@ -53,23 +50,32 @@ func runMaster() {
 		logger.Printf("Watching file=%v\n", path)
 	}
 
-	archiver.Watch(".")
+	archiver.Watch("_")
 	archiver.Start()
 }
 
+func newArchiver() (*archiver, error) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := bbolt.Open(DB_FILE, 0644, nil)
+	if err != nil {
+		logger.Printf("Failed to open db: %v\n", err)
+		return nil, err
+	}
+
+	return &archiver{watcher, db}, nil
+}
+
 func (a *archiver) Start() {
-	for ev := range a.Events {
-		logger.Println(ev)
+	for ev := range a.watcher.Events {
+		libra.Put("archive", ev.String())
 
 		if ev.Op&fsnotify.Create != 0 {
 			if err := a.Watch(ev.Name); err != nil {
 				logger.Printf("failed to watch: %v\n", err)
-				continue
-			}
-		}
-		if ev.Op&(fsnotify.Remove|fsnotify.Rename) != 0 {
-			if err := a.Unwatch(ev.Name); err != nil {
-				logger.Printf("failed to unwatch: %v\n", err)
 				continue
 			}
 		}
@@ -83,87 +89,94 @@ func (a *archiver) Start() {
 }
 
 func (a *archiver) Watch(path string) error {
+	abspath, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("failed to get path: %v\n", err)
+	}
+
 	info, err := os.Stat(path)
 	if err != nil {
 		return fmt.Errorf("failed to stat: %v\n", err)
 	}
-	return a.watch(info)
-}
-func (a *archiver) watch(info os.FileInfo) error {
-	if info.IsDir() {
-		if _, ok := a.watching[info.Name()]; ok {
-			return fmt.Errorf("already watching: %v\n", info.Name())
-		}
 
-		if err := a.Add(info.Name()); err != nil {
+	return a.watch(abspath, info)
+}
+func (a *archiver) watch(path string, info os.FileInfo) error {
+	if info.IsDir() {
+		if err := a.watcher.Add(path); err != nil {
 			return fmt.Errorf("failed to add to watcher: %v\n", err)
 		}
 
-		children, err := a.watchChildren(info)
+		dirs, err := ioutil.ReadDir(path)
 		if err != nil {
-			return fmt.Errorf("failed to watch children: %v\n", err)
+			return fmt.Errorf("failed to read dir: %v\n", err)
 		}
-		a.watching[info.Name()] = children
+
+		for _, ent := range dirs {
+			if err := a.watch(filepath.Join(path, ent.Name()), ent); err != nil {
+				return fmt.Errorf("failed to watch child: %v\n", err)
+			}
+		}
 	} else {
-		if err := a.snapshot(info.Name()); err != nil {
-			return fmt.Errorf("failed to watch children: %v\n", err)
+		has, err := a.hasSnapshot(path)
+		if err != nil {
+			return fmt.Errorf("failed to check snapshot: %v\n", err)
+		}
+		if !has {
+			if err := a.snapshot(path); err != nil {
+				return fmt.Errorf("failed to watch children: %v\n", err)
+			}
 		}
 	}
 	return nil
-}
-func (a *archiver) watchChildren(info os.FileInfo) ([]string, error) {
-	children := []string{}
-
-	dirs, err := ioutil.ReadDir(info.Name())
-	if err != nil {
-		return nil, fmt.Errorf("failed to read dir: %v\n", err)
-	}
-
-	for _, ent := range dirs {
-		if err := a.watch(ent); err != nil {
-			return nil, fmt.Errorf("failed to watch: %v\n", err)
-		}
-
-		if ent.IsDir() {
-			children = append(children, ent.Name())
-		}
-	}
-
-	return children, nil
-}
-
-func (a *archiver) Unwatch(path string) error {
-	info, err := os.Stat(path)
-	if err != nil {
-		return fmt.Errorf("failed to stat: %v\n", err)
-	}
-	return a.unwatch(info)
-}
-func (a *archiver) unwatch(info os.FileInfo) error {
-	if info.IsDir() {
-		if _, ok := a.watching[info.Name()]; ok {
-			return fmt.Errorf("not watching: %v\n", info.Name())
-		}
-
-		if err := a.Remove(info.Name()); err != nil {
-			return fmt.Errorf("failed to remove from watcher: %v\n", err)
-		}
-
-		if err := a.unwatchChildren(a.watching[info.Name()]); err != nil {
-			return fmt.Errorf("failed to unwatch children: %v\n", err)
-		}
-
-		delete(a.watching, info.Name())
-	}
-}
-func (a *archiver) Unwatch(path string) error {
-	info, err := os.Stat(path)
-	if err != nil {
-		return fmt.Errorf("failed to stat: %v\n", err)
-	}
-	return a.unwatch(info)
 }
 
 func (a *archiver) snapshot(path string) error {
-	return nil
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %v\n", err)
+	}
+
+	bucketName, err := ptob(path)
+	if err != nil {
+		return fmt.Errorf("failed to get bucket name: %v\n", err)
+	}
+
+	key := make([]byte, 8)
+	binary.BigEndian.PutUint64(key, uint64(time.Now().UnixNano()))
+
+	value, err := camo.Encode(data)
+	if err != nil {
+		return fmt.Errorf("failed to encode data: %v\n", err)
+	}
+
+	return a.db.Update(func(tx *bbolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists(bucketName)
+		if err != nil {
+			return err
+		}
+
+		logger.Println("creating snapshot:", path)
+		return b.Put(key, value)
+	})
+}
+func (a *archiver) hasSnapshot(path string) (bool, error) {
+	bucketName, err := ptob(path)
+	if err != nil {
+		return false, err
+	}
+
+	var has bool
+	return has, a.db.View(func(tx *bbolt.Tx) error {
+		has = tx.Bucket(bucketName) != nil
+		return nil
+	})
+}
+
+func ptob(p string) ([]byte, error) {
+	k, err := camo.Encode([]byte(p))
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode data: %v\n", err)
+	}
+	return k, nil
 }
