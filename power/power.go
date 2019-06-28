@@ -38,8 +38,13 @@ func StartService(g *echo.Group) {
 
 		logger.Println("Killing old process ...")
 		resp, err := http.Post("http://"+LISTEN+"/power", messaging.Type(), bytes.NewReader(payload))
-		if err != nil || resp.StatusCode != http.StatusOK {
+		if err != nil {
 			logger.Printf("Failed to kill: %v\n", err)
+			time.Sleep(ACTION_DELAY_SEC * time.Second)
+			continue
+		}
+		if resp.StatusCode != http.StatusOK {
+			logger.Printf("Failed to kill: (http_status=%d)\n", resp.StatusCode)
 			time.Sleep(ACTION_DELAY_SEC * time.Second)
 			continue
 		}
