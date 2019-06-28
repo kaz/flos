@@ -1,14 +1,13 @@
 package color
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/md5"
-	"encoding/gob"
 	"fmt"
 	"time"
 
 	"github.com/kaz/flos/camo"
+	"github.com/shamaton/msgpack"
 )
 
 const (
@@ -32,14 +31,10 @@ type (
 )
 
 func serialize(obj interface{}) ([]byte, error) {
-	buf := bytes.NewBuffer(nil)
-	if err := gob.NewEncoder(buf).Encode(obj); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return msgpack.Encode(obj)
 }
 func deserialize(data []byte, objPtr interface{}) error {
-	return gob.NewDecoder(bytes.NewReader(data)).Decode(objPtr)
+	return msgpack.Decode(data, objPtr)
 }
 
 func sign(data []byte) ([]byte, error) {

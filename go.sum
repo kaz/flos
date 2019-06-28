@@ -24,6 +24,8 @@ github.com/mattn/go-jsonpointer v0.0.0-20180225143300-37667080efed h1:fCWISZq4YN
 github.com/mattn/go-jsonpointer v0.0.0-20180225143300-37667080efed/go.mod h1:SDJ4hurDYyQ9/7nc+eCYtXqdufgK4Cq9TJlwPklqEYA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/shamaton/msgpack v1.1.0 h1:Cg9sp47Bd/Q5LNBCB0+7t9UI43FY3qiVkyVZgFoJWs8=
+github.com/shamaton/msgpack v1.1.0/go.mod h1:ibiaNQRTCUISAYkkyOpaSCEBiCAxXe6u6Mu1sQ6945U=
 github.com/shirou/gopsutil v2.18.12+incompatible h1:1eaJvGomDnH74/5cF4CTmTbLHAriGFsTZppLXDX93OM=
 github.com/shirou/gopsutil v2.18.12+incompatible/go.mod h1:5b4v6he4MtMOwMlS0TUMTu2PcXUg8+E1lC7eC3UO/RA=
 github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 h1:udFKJ0aHUL60LboW/A+DfgoHVedieIzIXE8uylPue0U=
