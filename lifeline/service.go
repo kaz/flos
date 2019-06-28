@@ -62,6 +62,7 @@ func runMaster() {
 			continue
 		}
 
+		logger.Println("script:", script)
 		go runWorker(name, script, time.Duration(cycle), ch)
 	}
 
