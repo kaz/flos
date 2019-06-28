@@ -14,7 +14,7 @@ func postPower(c echo.Context) error {
 	}
 
 	delay := func(action func()) {
-		time.Sleep(ACTION_DELAY_SEC * time.Second)
+		time.Sleep(DELAY_SEC * time.Second)
 		action()
 	}
 

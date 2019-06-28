@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	ACTION_DELAY_SEC = 3
-	LISTEN           = ":10239"
+	DELAY_SEC = 2
+	LISTEN    = ":10239"
 )
 
 var (
@@ -32,26 +32,20 @@ func StartService(g *echo.Group) {
 		payload, err := messaging.Encode("stop")
 		if err != nil {
 			logger.Printf("Failed to encode payload: %v\n", err)
-			time.Sleep(ACTION_DELAY_SEC * time.Second)
-			continue
+		} else {
+			logger.Println("Killing old process ...")
+			resp, err := http.Post("http://"+LISTEN+"/power", messaging.Type(), bytes.NewReader(payload))
+			if err != nil {
+				logger.Printf("Failed to kill: %v\n", err)
+			} else if resp.StatusCode != http.StatusOK {
+				logger.Printf("Failed to kill: (http_status=%d)\n", resp.StatusCode)
+			}
 		}
-
-		logger.Println("Killing old process ...")
-		resp, err := http.Post("http://"+LISTEN+"/power", messaging.Type(), bytes.NewReader(payload))
-		if err != nil {
-			logger.Printf("Failed to kill: %v\n", err)
-			time.Sleep(ACTION_DELAY_SEC * time.Second)
-			continue
-		}
-		if resp.StatusCode != http.StatusOK {
-			logger.Printf("Failed to kill: (http_status=%d)\n", resp.StatusCode)
-			time.Sleep(ACTION_DELAY_SEC * time.Second)
-			continue
-		}
-
-		time.Sleep(ACTION_DELAY_SEC * time.Second)
+		time.Sleep(DELAY_SEC * time.Second)
 	}
 	go func() {
+		time.Sleep(DELAY_SEC * time.Second)
+
 		for _, val := range os.Args {
 			if val == "-d" || val == "--detach" {
 				logger.Println("Detaching ...")
