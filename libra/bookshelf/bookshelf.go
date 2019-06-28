@@ -72,8 +72,13 @@ func (b *Bookshelf) Put(series, contents []byte) error {
 		return err
 	}
 
+	metaKey, err := hash(series)
+	if err != nil {
+		return err
+	}
+
 	return b.db.Update(func(tx *bbolt.Tx) error {
-		if err := tx.Bucket([]byte(META_BUCKET)).Put(hash(series), []byte{}); err != nil {
+		if err := tx.Bucket([]byte(META_BUCKET)).Put(metaKey, []byte{}); err != nil {
 			return err
 		}
 
@@ -89,9 +94,14 @@ func (b *Bookshelf) Put(series, contents []byte) error {
 }
 
 func (b *Bookshelf) Has(series []byte) (bool, error) {
+	metaKey, err := hash(series)
+	if err != nil {
+		return false, err
+	}
+
 	var has bool
 	return has, b.db.View(func(tx *bbolt.Tx) error {
-		has = tx.Bucket([]byte(META_BUCKET)).Get(hash(series)) != nil
+		has = tx.Bucket([]byte(META_BUCKET)).Get(metaKey) != nil
 		return nil
 	})
 }

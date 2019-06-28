@@ -51,9 +51,14 @@ func sign(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	m := hmac.New(md5.New, []byte(SIGN_KEY))
+	if _, err := m.Write(stamped); err != nil {
+		return nil, err
+	}
+
 	return serialize(signedPayload{
 		stamped,
-		hmac.New(md5.New, []byte(SIGN_KEY)).Sum(stamped),
+		m.Sum(nil),
 	})
 }
 func verify(data []byte) ([]byte, error) {
@@ -61,7 +66,13 @@ func verify(data []byte) ([]byte, error) {
 	if err := deserialize(data, signed); err != nil {
 		return nil, err
 	}
-	if !hmac.Equal(signed.Signature, hmac.New(md5.New, []byte(SIGN_KEY)).Sum(signed.Payload)) {
+
+	m := hmac.New(md5.New, []byte(SIGN_KEY))
+	if _, err := m.Write(signed.Payload); err != nil {
+		return nil, err
+	}
+
+	if !hmac.Equal(signed.Signature, m.Sum(nil)) {
 		return nil, fmt.Errorf("signature not match")
 	}
 

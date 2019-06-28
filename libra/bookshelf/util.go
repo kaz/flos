@@ -52,6 +52,10 @@ func deserialize(data []byte, objPtr interface{}) error {
 	return gob.NewDecoder(bytes.NewReader(data)).Decode(objPtr)
 }
 
-func hash(key []byte) []byte {
-	return hmac.New(md5.New, []byte(HASH_KEY)).Sum(key)
+func hash(key []byte) ([]byte, error) {
+	m := hmac.New(md5.New, []byte(HASH_KEY))
+	if _, err := m.Write(key); err != nil {
+		return nil, err
+	}
+	return m.Sum(nil), nil
 }
