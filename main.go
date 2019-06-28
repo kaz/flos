@@ -1,6 +1,8 @@
 package main
 
 import (
+	"runtime"
+
 	"github.com/kaz/flos/archive"
 	"github.com/kaz/flos/audit"
 	"github.com/kaz/flos/beacon"
@@ -15,6 +17,8 @@ import (
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	e := echo.New()
 	e.HideBanner = true
 	e.HTTPErrorHandler = messaging.ErrorHandler

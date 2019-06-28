@@ -20,11 +20,11 @@ const (
 type (
 	Protocol struct{}
 
-	stampedPayload struct {
+	StampedPayload struct {
 		Payload   []byte
 		Timestamp int64
 	}
-	signedPayload struct {
+	SignedPayload struct {
 		Payload   []byte
 		Signature []byte
 	}
@@ -38,7 +38,7 @@ func deserialize(data []byte, objPtr interface{}) error {
 }
 
 func sign(data []byte) ([]byte, error) {
-	stamped, err := serialize(stampedPayload{
+	stamped, err := serialize(&StampedPayload{
 		data,
 		time.Now().UnixNano(),
 	})
@@ -51,13 +51,13 @@ func sign(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return serialize(signedPayload{
+	return serialize(&SignedPayload{
 		stamped,
 		m.Sum(nil),
 	})
 }
 func verify(data []byte) ([]byte, error) {
-	signed := &signedPayload{}
+	signed := &SignedPayload{}
 	if err := deserialize(data, signed); err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func verify(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("signature not match")
 	}
 
-	stamped := &stampedPayload{}
+	stamped := &StampedPayload{}
 	if err := deserialize(signed.Payload, stamped); err != nil {
 		return nil, err
 	}
