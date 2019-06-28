@@ -91,14 +91,14 @@ func (a *archiver) watch(path string, info os.FileInfo) error {
 			}
 		}
 	} else {
-		has, err := a.hasSnapshot(path)
-		if err != nil {
+		if bookshelf.IsBookshelf(path) {
+			return nil
+		} else if has, err := a.hasSnapshot(path); err != nil {
 			return fmt.Errorf("failed to check snapshot: %v\n", err)
-		}
-		if !has {
-			if err := a.snapshot(path); err != nil {
-				return fmt.Errorf("failed to watch children: %v\n", err)
-			}
+		} else if has {
+			return nil
+		} else if err := a.snapshot(path); err != nil {
+			return fmt.Errorf("failed to watch children: %v\n", err)
 		}
 	}
 	return nil
