@@ -1,13 +1,12 @@
 package main
 
 import (
-	"runtime"
-
 	"github.com/kaz/flos/archive"
 	"github.com/kaz/flos/audit"
 	"github.com/kaz/flos/beacon"
 	"github.com/kaz/flos/libra"
 	"github.com/kaz/flos/lifeline"
+	"github.com/kaz/flos/limit"
 	"github.com/kaz/flos/messaging"
 	"github.com/kaz/flos/power"
 	"github.com/kaz/flos/proxy"
@@ -17,12 +16,12 @@ import (
 )
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	e := echo.New()
 	e.HideBanner = true
 	e.HTTPErrorHandler = messaging.ErrorHandler
 
+	limit.Init()
 	messaging.Init()
 
 	e.Pre(proxy.Middleware)
