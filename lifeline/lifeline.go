@@ -3,6 +3,7 @@ package lifeline
 import (
 	"log"
 	"os"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 )
@@ -10,6 +11,7 @@ import (
 var (
 	logger = log.New(os.Stdout, "[lifeline] ", log.Ltime)
 
+	mu      = sync.RWMutex{}
 	results = map[string]*Result{}
 )
 

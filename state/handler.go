@@ -12,7 +12,12 @@ func getConfig(c echo.Context) error {
 	mu.RLock()
 	defer mu.RUnlock()
 
-	c.Set("response", store)
+	resp := make(map[string]interface{}, len(store))
+	for k, v := range store {
+		resp[k] = v
+	}
+
+	c.Set("response", resp)
 	return nil
 }
 

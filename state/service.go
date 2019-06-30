@@ -25,7 +25,7 @@ func (s *State) Get(path string) (*State, error) {
 func (s *State) List() []*State {
 	src, ok := s.element.([]interface{})
 	if !ok {
-		logger.Println("target is not array! ", s)
+		logger.Println("target is not array:", s)
 		return []*State{}
 	}
 

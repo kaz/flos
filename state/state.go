@@ -28,9 +28,8 @@ const (
 var (
 	logger = log.New(os.Stdout, "[state] ", log.Ltime)
 
-	mu = sync.RWMutex{}
-
-	store    interface{}
+	mu       = sync.RWMutex{}
+	store    map[string]interface{}
 	rawStore []byte
 )
 

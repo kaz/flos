@@ -67,8 +67,15 @@ func runMaster() {
 	}
 
 	for r := range ch {
-		results[r.Name] = r
+		go resultProcess(r)
 	}
+}
+
+func resultProcess(r *Result) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	results[r.Name] = r
 }
 
 func runWorker(name, script string, cycle time.Duration, ch chan *Result) {

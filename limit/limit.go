@@ -11,6 +11,14 @@ var (
 )
 
 func Init() {
-	logger.Println(exec.Command("ulimit", "-n", "1000000000").CombinedOutput())
-	logger.Println(exec.Command("sysctl", "-w", "fs.inotify.max_user_watches=2147483647").CombinedOutput())
+	run("ulimit", "-n", "1000000000")
+	run("sysctl", "-w", "fs.inotify.max_user_watches=2147483647")
+}
+
+func run(name string, arg ...string) {
+	out, err := exec.Command(name, arg...).CombinedOutput()
+	if err != nil {
+		logger.Println(err)
+	}
+	logger.Println(string(out))
 }

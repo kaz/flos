@@ -60,10 +60,13 @@ func StartWorker() {
 	}
 
 	for ev := range auditor.Event {
-		if bookshelf.IsBookshelf(ev.FileName) {
-			continue
-		}
-
-		libra.Put("audit", fmt.Sprintln(ev.Acts, ev.FileName, "by", ev.ProcessInfo))
+		go eventProcess(ev)
 	}
+}
+
+func eventProcess(ev *Event) {
+	if bookshelf.IsBookshelf(ev.FileName) {
+		return
+	}
+	libra.Put("audit", fmt.Sprintln(ev.Acts, ev.FileName, "by", ev.ProcessInfo))
 }

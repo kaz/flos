@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	mu     sync.RWMutex
+	mu     = sync.RWMutex{}
 	shelfs = []string{}
 )
 

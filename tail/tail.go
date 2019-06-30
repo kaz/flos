@@ -16,6 +16,7 @@ import (
 var (
 	logger = log.New(os.Stdout, "[tail] ", log.Ltime)
 
+	// now concurrent read only
 	files = map[string]*os.File{}
 )
 
@@ -60,24 +61,28 @@ func StartWorker() {
 	}
 
 	for ev := range tailer.Events {
-		if ev.Op&fsnotify.Write != 0 {
-			file, ok := files[ev.Name]
-			if !ok {
-				logger.Printf("event for unexpected file=%v detected\n", ev.Name)
-				continue
-			}
+		go eventProcess(&ev)
+	}
+}
 
-			data, err := ioutil.ReadAll(file)
-			if err != nil {
-				logger.Printf("failed to read file: %v\n", err)
-				continue
-			}
-			if _, err := file.Seek(0, io.SeekEnd); err != nil {
-				logger.Printf("failed to seek file: %v\n", err)
-				continue
-			}
-
-			libra.Put("tail", fmt.Sprintf("[%v] %v", ev.Name, strings.Trim(string(data), "\r\n")))
+func eventProcess(ev *fsnotify.Event) {
+	if ev.Op&fsnotify.Write != 0 {
+		file, ok := files[ev.Name]
+		if !ok {
+			logger.Printf("event for unexpected file=%v detected\n", ev.Name)
+			return
 		}
+
+		data, err := ioutil.ReadAll(file)
+		if err != nil {
+			logger.Printf("failed to read file: %v\n", err)
+			return
+		}
+		if _, err := file.Seek(0, io.SeekEnd); err != nil {
+			logger.Printf("failed to seek file: %v\n", err)
+			return
+		}
+
+		libra.Put("tail", fmt.Sprintf("[%v] %v", ev.Name, strings.Trim(string(data), "\r\n")))
 	}
 }

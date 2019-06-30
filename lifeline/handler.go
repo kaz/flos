@@ -8,7 +8,15 @@ import (
 )
 
 func get(c echo.Context) error {
-	c.Set("response", results)
+	mu.RLock()
+	defer mu.RUnlock()
+
+	resp := make(map[string]*Result, len(results))
+	for k, v := range results {
+		resp[k] = v
+	}
+
+	c.Set("response", resp)
 	return nil
 }
 
