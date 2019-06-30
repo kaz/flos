@@ -23,24 +23,8 @@ var (
 )
 
 func StartService(g *echo.Group) {
-	go func() {
-		for {
-			ch := make(chan error)
-			go sendBeacon(ch)
-			logger.Println("Beacon sending goroutine has been started")
-			logger.Printf("Sending beacon failed: %v\n", <-ch)
-			close(ch)
-		}
-	}()
-	go func() {
-		for {
-			ch := make(chan error)
-			go recvBeacon(ch)
-			logger.Println("Beacon receiving goroutine has been started")
-			logger.Printf("Receiving beacon failed: %v\n", <-ch)
-			close(ch)
-		}
-	}()
+	go startSender()
+	go startReceiver()
 
 	g.GET("/nodes", getNodes)
 	g.DELETE("/node", deleteNode)
