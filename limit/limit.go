@@ -2,9 +2,10 @@ package limit
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
+	"strconv"
 	"syscall"
 )
 
@@ -51,25 +52,19 @@ func setNoFileLimit() error {
 }
 
 func setInotifyLimit() error {
-	out, err := exec.Command("bash", "-c", `
-		min=0
-		max=$(( 1 << 62 ))
+	var min uint64 = 0
+	var max uint64 = 1<<64 - 1
 
-		while (( max - min > 1 )); do
-			mid=$(( (min + max) >> 1 ))
-			if echo $mid > /proc/sys/fs/inotify/max_user_watches; then
-				min=$mid
-			else
-				max=$mid
-			fi
-		done
+	for max-min > 1 {
+		mid := (min + max) / 2
 
-		echo $mid | tee /proc/sys/fs/inotify/max_user_watches
-	`).Output()
-	if err != nil {
-		return err
+		if err := ioutil.WriteFile("/proc/sys/fs/inotify/max_user_watches", []byte(strconv.FormatUint(mid, 10)), 0644); err == nil {
+			min = mid
+		} else {
+			max = mid
+		}
 	}
 
-	logger.Printf("fs.inotify.max_user_watches set to %s\n", out)
+	logger.Printf("fs.inotify.max_user_watches set to %d\n", min)
 	return nil
 }
