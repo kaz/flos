@@ -22,19 +22,7 @@ func StartService(g *echo.Group) {
 	g.PATCH("/snapshots", archiver.shelf.GetHandler)
 	g.DELETE("/snapshots", archiver.shelf.DeleteHandler)
 
-	s, err := state.RootState().Get("/archive")
-	if err != nil {
-		logger.Printf("failed to read config: %v\n", err)
-		return
-	}
-
-	for _, cfg := range s.List() {
-		path, ok := cfg.Value().(string)
-		if !ok {
-			logger.Printf("invalid config type")
-			continue
-		}
-
+	for _, path := range state.Get().Archive {
 		if err := archiver.Watch(path); err != nil {
 			logger.Printf("failed to watch: %v\n", err)
 			continue

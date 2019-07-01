@@ -1,8 +1,9 @@
 package state
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"github.com/shamaton/msgpack"
 
 	"github.com/kaz/flos/camo"
 	"github.com/labstack/echo/v4"
@@ -10,27 +11,19 @@ import (
 
 func getConfig(c echo.Context) error {
 	mu.RLock()
-	defer mu.RUnlock()
+	c.Set("response", current)
+	mu.RUnlock()
 
-	resp := make(map[string]interface{}, len(store))
-	for k, v := range store {
-		resp[k] = v
-	}
-
-	c.Set("response", resp)
 	return nil
 }
 
 func putConfig(c echo.Context) error {
-	mu.Lock()
-	defer mu.Unlock()
-
-	req, ok := c.Get("request").(map[string]interface{})
+	req, ok := c.Get("request").(State)
 	if !ok {
 		return fmt.Errorf("unexpected request format")
 	}
 
-	raw, err := json.Marshal(&req)
+	raw, err := msgpack.Encode(req)
 	if err != nil {
 		return err
 	}
@@ -39,8 +32,9 @@ func putConfig(c echo.Context) error {
 		return err
 	}
 
-	store = req
-	rawStore = raw
+	mu.Lock()
+	current = req
+	mu.Unlock()
 
 	logger.Println("state updated")
 	return nil

@@ -28,21 +28,9 @@ func StartWorker() {
 	}
 	defer tailer.Close()
 
-	s, err := state.RootState().Get("/tail")
-	if err != nil {
-		logger.Printf("failed to read config: %v\n", err)
-		return
-	}
-
-	for _, cfg := range s.List() {
-		path, ok := cfg.Value().(string)
-		if !ok {
-			logger.Printf("invalid config type")
-			continue
-		}
-
+	for _, path := range state.Get().Tail {
 		file, err := os.Open(path)
-		if !ok {
+		if err != nil {
 			logger.Printf("failed to open file: %v\n", err)
 			continue
 		}

@@ -21,37 +21,14 @@ func StartWorker() {
 		return
 	}
 
-	s, err := state.RootState().Get("/audit/file")
-	if err != nil {
-		logger.Printf("failed to read config: %v\n", err)
-		return
-	}
-
-	for _, cfg := range s.List() {
-		path, ok := cfg.Value().(string)
-		if !ok {
-			logger.Printf("invalid config type")
-			continue
-		}
+	for _, path := range state.Get().Audit.File {
 		if err := auditor.WatchFile(path); err != nil {
 			logger.Printf("failed to watch: %v\n", err)
 			continue
 		}
 		logger.Printf("Watching file=%v\n", path)
 	}
-
-	s, err = state.RootState().Get("/audit/mount")
-	if err != nil {
-		logger.Printf("failed to read config: %v\n", err)
-		return
-	}
-
-	for _, cfg := range s.List() {
-		path, ok := cfg.Value().(string)
-		if !ok {
-			logger.Printf("invalid config type")
-			return
-		}
+	for _, path := range state.Get().Audit.Mount {
 		if err := auditor.WatchMount(path); err != nil {
 			logger.Printf("failed to watch: %v\n", err)
 			return

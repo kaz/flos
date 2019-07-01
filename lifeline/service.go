@@ -17,53 +17,11 @@ type (
 )
 
 func runMaster() {
-	s, err := state.RootState().Get("/lifeline")
-	if err != nil {
-		logger.Printf("failed to read config: %v\n", err)
-		return
-	}
-
 	ch := make(chan *Result)
 
-	for _, cfg := range s.List() {
-		naState, err := cfg.Get("/name")
-		if err != nil {
-			logger.Printf("failed to read config: %v\n", err)
-			continue
-		}
-
-		name, ok := naState.Value().(string)
-		if !ok {
-			logger.Printf("invalid config type")
-			continue
-		}
-
-		scState, err := cfg.Get("/script")
-		if err != nil {
-			logger.Printf("failed to read config: %v\n", err)
-			continue
-		}
-
-		script, ok := scState.Value().(string)
-		if !ok {
-			logger.Printf("invalid config type")
-			continue
-		}
-
-		cyState, err := cfg.Get("/cycle")
-		if err != nil {
-			logger.Printf("failed to read config: %v\n", err)
-			continue
-		}
-
-		cycle, ok := cyState.Value().(float64)
-		if !ok {
-			logger.Printf("invalid config type")
-			continue
-		}
-
-		logger.Println("script:", script)
-		go runWorker(name, script, time.Duration(cycle), ch)
+	for _, cfg := range state.Get().Lifeline {
+		logger.Println("script:", cfg.Script)
+		go runWorker(cfg.Name, cfg.Script, time.Duration(cfg.Cycle), ch)
 	}
 
 	for r := range ch {

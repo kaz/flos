@@ -16,7 +16,6 @@ import (
 )
 
 func main() {
-
 	e := echo.New()
 	e.HideBanner = true
 	e.HTTPErrorHandler = messaging.ErrorHandler

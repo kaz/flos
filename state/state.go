@@ -1,55 +1,36 @@
 package state
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 	"sync"
 
 	"github.com/kaz/flos/camo"
 	"github.com/labstack/echo/v4"
+	"github.com/shamaton/msgpack"
 )
 
 const (
-	STORE_FILE    = "chunk.0001.zip"
-	DEFAULT_STATE = `
-		{
-			"archive": [],
-			"audit": {
-				"file": [],
-				"mount": []
-			},
-			"lifeline": [],
-			"tail": []
-		}
-	`
+	STORE_FILE = "chunk.0001.zip"
 )
 
 var (
 	logger = log.New(os.Stdout, "[state] ", log.Ltime)
-
-	mu       = sync.RWMutex{}
-	store    map[string]interface{}
-	rawStore []byte
+	mu     = sync.RWMutex{}
 )
 
 func StartService(g *echo.Group) {
-	var err error
-	rawStore, err = camo.ReadFile(STORE_FILE)
+	raw, err := camo.ReadFile(STORE_FILE)
 	if err != nil {
 		logger.Printf("failed to read state: %v\n", err)
-		rawStore = []byte(DEFAULT_STATE)
-	}
-
-	if err := json.Unmarshal(rawStore, &store); err != nil {
+	} else if err := msgpack.Decode(raw, &current); err != nil {
 		logger.Printf("failed to parse state: %v\n", err)
-		rawStore = []byte(DEFAULT_STATE)
-
-		if err := json.Unmarshal(rawStore, &store); err != nil {
-			panic(err)
-		}
 	}
 
 	g.GET("", getConfig)
 	g.PUT("", putConfig)
+}
+
+func Get() State {
+	return current
 }
