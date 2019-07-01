@@ -9,10 +9,10 @@ import (
 
 type (
 	Result struct {
-		Timestamp time.Time
 		Name      string
 		Success   bool
 		Output    string
+		Timestamp int64
 	}
 )
 
@@ -86,10 +86,10 @@ func runWorker(name, script string, cycle time.Duration, ch chan *Result) {
 		}
 
 		ch <- &Result{
-			Timestamp: time.Now(),
 			Name:      name,
 			Success:   err == nil,
 			Output:    string(out),
+			Timestamp: time.Now().UnixNano(),
 		}
 		time.Sleep(cycle * time.Second)
 	}

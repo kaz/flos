@@ -25,7 +25,7 @@ type (
 		ID        uint64
 		Series    []byte
 		Contents  []byte
-		Timestamp time.Time
+		Timestamp int64
 	}
 )
 
@@ -61,7 +61,7 @@ func (b *Bookshelf) Put(series, contents []byte) error {
 	data, err := serialize(&Book{
 		Series:    series,
 		Contents:  contents,
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UnixNano(),
 	})
 	if err != nil {
 		return err
