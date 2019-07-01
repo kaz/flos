@@ -9,7 +9,10 @@ import (
 
 func ErrorHandler(err error, c echo.Context) {
 	logger.Println(err)
-	resp, _ := Encode(err)
+	resp, err := Encode(err.Error())
+	if err != nil {
+		logger.Println("failed to encode:", err)
+	}
 	c.Blob(http.StatusBadRequest, Type(), resp)
 }
 
