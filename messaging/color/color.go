@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	// signature valid in 4s
-	VALID_THRU = 4 * 1000 * 1000
+	// signature valid in 15s
+	VALID_THRU = 15 * time.Second
 
 	SIGN_KEY = "Daphne Ficus Iris Maackia Lythrum Myrica Sabia Flos"
 )
@@ -75,7 +75,7 @@ func verify(data []byte) ([]byte, error) {
 	if err := deserialize(signed.Payload, stamped); err != nil {
 		return nil, err
 	}
-	if time.Now().UnixNano()-stamped.Timestamp > VALID_THRU {
+	if time.Since(time.Unix(0, stamped.Timestamp)) > VALID_THRU {
 		return nil, fmt.Errorf("signature expired")
 	}
 
