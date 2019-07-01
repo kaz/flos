@@ -1,8 +1,6 @@
 package state
 
 import (
-	"fmt"
-
 	"github.com/shamaton/msgpack"
 
 	"github.com/kaz/flos/camo"
@@ -18,13 +16,13 @@ func getConfig(c echo.Context) error {
 }
 
 func putConfig(c echo.Context) error {
-	req, ok := c.Get("request").(State)
-	if !ok {
-		return fmt.Errorf("unexpected request format")
+	raw, err := msgpack.Encode(c.Get("request"))
+	if err != nil {
+		return err
 	}
 
-	raw, err := msgpack.Encode(req)
-	if err != nil {
+	var newState State
+	if err := msgpack.Decode(raw, &newState); err != nil {
 		return err
 	}
 
@@ -33,7 +31,7 @@ func putConfig(c echo.Context) error {
 	}
 
 	mu.Lock()
-	current = req
+	current = newState
 	mu.Unlock()
 
 	logger.Println("state updated")
