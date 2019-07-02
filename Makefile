@@ -1,15 +1,15 @@
 .PHONY: image
-image: flosd
+image: flos
 	docker build -t flos .
 
-.PHONY: flosd
-flosd: builder
+.PHONY: flos
+flos: builder
 	docker exec -ti builder go build -ldflags '-w -s -extldflags "-static"' -o $@
 
 .PHONY: builder
 builder:
-	docker run -dit --rm --name builder --volume $(PWD):/src --workdir /src alpine:edge || true
-	docker exec -ti builder apk add go gcc git musl-dev
+	docker run -dit --name builder --volume $(PWD):/src --workdir /src alpine:edge || true
+	docker exec -ti builder apk add go gcc git musl-dev || true
 
 .PHONY: run
 run:

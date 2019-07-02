@@ -1,3 +1,3 @@
 FROM scratch
-COPY flosd /
-CMD ["/flosd"]
+COPY flos /
+CMD ["/flos"]
