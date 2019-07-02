@@ -12,8 +12,10 @@ import (
 )
 
 const (
-	ARCHIVE_FILE  = "chunk.0003.zip"
-	MAX_ROW_COUNT = 1 << 10
+	ARCHIVE_FILE = "chunk.0003.zip"
+
+	MAX_ROW_COUNT = 50
+	MAX_FILE_SIZE = 64 * 1024 * 1024
 )
 
 type (
@@ -105,6 +107,16 @@ func (a *archiver) watch(path string, info os.FileInfo) error {
 }
 
 func (a *archiver) snapshot(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("failed to stat: %v\n", err)
+	}
+
+	if info.Size() > MAX_FILE_SIZE {
+		logger.Printf("huge file change detected. ignoring: %v\n", path)
+		return nil
+	}
+
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %v\n", err)

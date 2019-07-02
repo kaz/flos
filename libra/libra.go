@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	LIBRA_FILE    = "chunk.0002.zip"
-	MAX_ROW_COUNT = 1 << 13
+	LIBRA_FILE = "chunk.0002.zip"
+
+	MAX_ROW_COUNT = 5000
 )
 
 var (
