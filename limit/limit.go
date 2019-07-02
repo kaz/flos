@@ -1,3 +1,5 @@
+// +build linux darwin
+
 package limit
 
 import (

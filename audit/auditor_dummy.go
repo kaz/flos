@@ -1,8 +1,6 @@
-package audit
+// +build !linux
 
-/*
-	An auditor for darwin actually does nothing.
-*/
+package audit
 
 type (
 	Auditor struct {
