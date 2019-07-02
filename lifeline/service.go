@@ -1,9 +1,11 @@
 package lifeline
 
 import (
+	"fmt"
 	"os/exec"
 	"time"
 
+	"github.com/kaz/flos/libra"
 	"github.com/kaz/flos/state"
 )
 
@@ -31,9 +33,15 @@ func runMaster() {
 
 func resultProcess(r *Result) {
 	mu.Lock()
-	defer mu.Unlock()
-
 	results[r.Name] = r
+	mu.Unlock()
+
+	label := "NG"
+	if r.Success {
+		label = "OK"
+	}
+
+	libra.Put("lifeline", fmt.Sprintf("[%s] <%s> %s", r.Name, label, r.Output))
 }
 
 func runWorker(name, script string, cycle time.Duration, ch chan *Result) {
