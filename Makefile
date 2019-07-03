@@ -1,11 +1,7 @@
-.PHONY: image
-image: flos
-	docker build -t flos .
-
 .PHONY: flos
 flos:
 	GOOS=linux go build -ldflags '-w -s -extldflags "-static"' -o $@
 
-.PHONY: run
-run:
-	docker run --rm flos
+.PHONY: flos.exe
+flos.exe:
+	GOOS=windows go build -ldflags '-w -s -extldflags "-static"' -o $@

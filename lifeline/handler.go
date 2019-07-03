@@ -2,7 +2,6 @@ package lifeline
 
 import (
 	"fmt"
-	"os/exec"
 
 	"github.com/labstack/echo/v4"
 )
@@ -26,7 +25,7 @@ func postShell(c echo.Context) error {
 		return fmt.Errorf("unexpected request format")
 	}
 
-	out, _ := exec.Command("sh", "-c", req).CombinedOutput()
+	out, _ := command(req).CombinedOutput()
 	c.Set("response", string(out))
 	return nil
 }

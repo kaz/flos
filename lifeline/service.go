@@ -2,7 +2,6 @@ package lifeline
 
 import (
 	"fmt"
-	"os/exec"
 	"time"
 
 	"github.com/kaz/flos/libra"
@@ -46,7 +45,7 @@ func resultProcess(r *Result) {
 
 func runWorker(name, script string, cycle time.Duration, ch chan *Result) {
 	for {
-		out, err := exec.Command("sh", "-c", script).CombinedOutput()
+		out, err := command(script).CombinedOutput()
 		if err != nil {
 			// logger.Printf("command failed: %v\n", err)
 		}
