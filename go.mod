@@ -6,10 +6,8 @@ require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-ole/go-ole v1.2.4 // indirect
-	github.com/google/go-cmp v0.3.0 // indirect
+	github.com/golang/snappy v0.0.1
 	github.com/jandre/fanotify v0.0.0-20140426212615-4c3a5311d56e
-	github.com/klauspost/compress v1.7.1
-	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/labstack/echo/v4 v4.1.6
 	github.com/shamaton/msgpack v1.1.0
 	github.com/shirou/gopsutil v2.18.12+incompatible

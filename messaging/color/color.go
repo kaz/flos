@@ -9,9 +9,8 @@ import (
 	"io/ioutil"
 	"time"
 
+	"github.com/golang/snappy"
 	"github.com/kaz/flos/camo"
-
-	"github.com/klauspost/compress/zstd"
 	"github.com/shamaton/msgpack"
 )
 
@@ -104,11 +103,7 @@ func (p *Protocol) Encode(obj interface{}) ([]byte, error) {
 	}
 	defer cWriter.Close()
 
-	zWriter, err := zstd.NewWriter(cWriter)
-	if err != nil {
-		return nil, err
-	}
-
+	zWriter := snappy.NewBufferedWriter(cWriter)
 	if _, err := zWriter.Write(data); err != nil {
 		return nil, err
 	}
@@ -127,12 +122,7 @@ func (p *Protocol) Decode(data []byte, objPtr interface{}) error {
 		return err
 	}
 
-	zReader, err := zstd.NewReader(cReader)
-	if err != nil {
-		return err
-	}
-	defer zReader.Close()
-
+	zReader := snappy.NewReader(cReader)
 	data, err = ioutil.ReadAll(zReader)
 	if err != nil {
 		return err
