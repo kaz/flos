@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/jandre/fanotify"
-	"github.com/shirou/gopsutil/process"
 	"golang.org/x/sys/unix"
 )
 
@@ -70,13 +69,10 @@ func (a *Auditor) startAudit() {
 			continue
 		}
 
-		var procInfo string
-		process, err := process.NewProcess(ev.Pid)
+		procInfo, err := GetProcInfo(ev.Pid)
 		if err != nil {
 			// logger.Println(err)
 			procInfo = "[unknown process]"
-		} else {
-			procInfo = getProcInfo(process)
 		}
 
 		fileName, err := os.Readlink(fmt.Sprintf("/proc/self/fd/%d", ev.File.Fd()))
@@ -116,38 +112,4 @@ func (a *Auditor) startAudit() {
 		ev.File.Close()
 		a.Event <- &Event{acts, fileName, procInfo}
 	}
-}
-
-func getProcInfo(p *process.Process) string {
-	info := ""
-
-	name, err := p.Name()
-	if err == nil {
-		info += fmt.Sprintf("%s pid=%d ", name, p.Pid)
-	} else {
-		info += fmt.Sprintf("(unrecognized) pid=%d ", p.Pid)
-	}
-
-	uids, err := p.Uids()
-	if err == nil {
-		info += fmt.Sprintf("uid=%v ", uids[0])
-	} else {
-		info += "uid=? "
-	}
-
-	gids, err := p.Gids()
-	if err == nil {
-		info += fmt.Sprintf("gid=%v ", gids[0])
-	} else {
-		info += "gid=? "
-	}
-
-	exe, err := p.Exe()
-	if err == nil {
-		info += fmt.Sprintf("bin=%s ", exe)
-	} else {
-		info += "bin=? "
-	}
-
-	return info
 }

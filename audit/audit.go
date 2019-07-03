@@ -15,6 +15,8 @@ var (
 )
 
 func StartWorker() {
+	go cacheFlusher()
+
 	auditor, err := NewAuditor(false)
 	if err != nil {
 		logger.Printf("failed to init auditor: %v\n", err)
