@@ -9,6 +9,7 @@ require (
 	github.com/golang/snappy v0.0.1
 	github.com/jandre/fanotify v0.0.0-20140426212615-4c3a5311d56e
 	github.com/labstack/echo/v4 v4.1.6
+	github.com/pkg/profile v1.3.0
 	github.com/shamaton/msgpack v1.1.0
 	github.com/shirou/gopsutil v2.18.12+incompatible
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect

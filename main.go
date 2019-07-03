@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/kaz/flos/archive"
 	"github.com/kaz/flos/audit"
 	"github.com/kaz/flos/libra"
@@ -12,9 +14,16 @@ import (
 	"github.com/kaz/flos/state"
 	"github.com/kaz/flos/tail"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/profile"
 )
 
 func main() {
+	if os.Getenv("PROF") == "CPU" {
+		defer profile.Start(profile.CPUProfile).Stop()
+	} else if os.Getenv("PROF") == "MEM" {
+		defer profile.Start(profile.MemProfile).Stop()
+	}
+
 	e := echo.New()
 	e.HideBanner = true
 	e.HTTPErrorHandler = messaging.ErrorHandler
