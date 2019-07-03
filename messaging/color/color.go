@@ -1,13 +1,17 @@
 package color
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/md5"
 	"encoding/binary"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/kaz/flos/camo"
+
+	"github.com/klauspost/compress/zstd"
 	"github.com/shamaton/msgpack"
 )
 
@@ -86,22 +90,59 @@ func (p *Protocol) Encode(obj interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	data, err = sign(data)
 	if err != nil {
 		return nil, err
 	}
-	return camo.Encode(data)
+
+	buffer := bytes.NewBuffer(make([]byte, 0, len(data)))
+
+	cWriter, err := camo.EncodeWriter(buffer)
+	if err != nil {
+		return nil, err
+	}
+	defer cWriter.Close()
+
+	zWriter, err := zstd.NewWriter(cWriter)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := zWriter.Write(data); err != nil {
+		return nil, err
+	}
+	if err := zWriter.Close(); err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
 }
 
 func (p *Protocol) Decode(data []byte, objPtr interface{}) error {
-	data, err := camo.Decode(data)
+	source := bytes.NewReader(data)
+
+	cReader, err := camo.DecodeReader(source)
 	if err != nil {
 		return err
 	}
+
+	zReader, err := zstd.NewReader(cReader)
+	if err != nil {
+		return err
+	}
+	defer zReader.Close()
+
+	data, err = ioutil.ReadAll(zReader)
+	if err != nil {
+		return err
+	}
+
 	data, err = verify(data)
 	if err != nil {
 		return err
 	}
+
 	return deserialize(data, objPtr)
 }
 

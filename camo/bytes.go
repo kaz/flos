@@ -2,33 +2,38 @@ package camo
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 )
 
+func EncodeWriter(w io.Writer) (io.WriteCloser, error) {
+	return encrypt(w)
+}
 func Encode(data []byte) ([]byte, error) {
-	buf := bytes.NewBuffer(nil)
+	buf := bytes.NewBuffer(make([]byte, 0, len(data)))
 
-	ew, err := encrypt(buf)
+	encWriter, err := EncodeWriter(buf)
 	if err != nil {
 		return nil, err
 	}
-
-	cw := compress(ew)
-	if _, err := cw.Write(data); err != nil {
+	if _, err := encWriter.Write(data); err != nil {
 		return nil, err
 	}
-	if err := cw.Flush(); err != nil {
+	if err := encWriter.Close(); err != nil {
 		return nil, err
 	}
 
 	return buf.Bytes(), nil
 }
 
+func DecodeReader(r io.Reader) (io.Reader, error) {
+	return decrypt(r)
+}
 func Decode(data []byte) ([]byte, error) {
-	dr, err := decrypt(bytes.NewReader(data))
+	decReader, err := DecodeReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 
-	return ioutil.ReadAll(decompress(dr))
+	return ioutil.ReadAll(decReader)
 }

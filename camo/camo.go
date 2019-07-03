@@ -5,8 +5,6 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"io"
-
-	"github.com/pierrec/lz4"
 )
 
 const (
@@ -22,7 +20,7 @@ func getStream(iv []byte) (cipher.Stream, error) {
 
 	return cipher.NewCTR(block, iv), nil
 }
-func encrypt(w io.Writer) (io.Writer, error) {
+func encrypt(w io.Writer) (*cipher.StreamWriter, error) {
 	iv := make([]byte, aes.BlockSize)
 	if _, err := rand.Read(iv); err != nil {
 		return nil, err
@@ -39,7 +37,7 @@ func encrypt(w io.Writer) (io.Writer, error) {
 
 	return &cipher.StreamWriter{S: stream, W: w}, nil
 }
-func decrypt(r io.Reader) (io.Reader, error) {
+func decrypt(r io.Reader) (*cipher.StreamReader, error) {
 	iv := make([]byte, aes.BlockSize)
 	if _, err := r.Read(iv); err != nil {
 		return nil, err
@@ -51,11 +49,4 @@ func decrypt(r io.Reader) (io.Reader, error) {
 	}
 
 	return &cipher.StreamReader{S: stream, R: r}, nil
-}
-
-func compress(w io.Writer) *lz4.Writer {
-	return lz4.NewWriter(w)
-}
-func decompress(r io.Reader) *lz4.Reader {
-	return lz4.NewReader(r)
 }
